@@ -6,611 +6,1249 @@ export const engineerTrack: Track = {
   name: "Elastic Certified Engineer",
   tagline: "Kuasi inti Elasticsearch: indexing, query, hingga manajemen cluster.",
   description:
-    "Jalur ini mempersiapkan Anda untuk ujian Elastic Certified Engineer. Anda akan belajar cara kerja Elasticsearch dari dasar, menulis dan mengelola dokumen, merancang mapping, menyusun query DSL, membuat agregasi, serta mengelola cluster dan shard.",
-  audience: "Cocok untuk backend engineer, data engineer, dan administrator platform pencarian.",
+    "Jalur belajar mandiri ini dirancang secara komprehensif mengikuti silabus resmi ujian sertifikasi Elastic Certified Engineer. Anda akan mempelajari seluruh konsep inti dari pemetaan string, query DSL, agregasi kompleks, ingest pipeline, hingga manajemen siklus hidup indeks, strategi sharding, pencarian multi-klaster, dan pemecahan masalah.",
+  audience: "Cocok untuk backend engineer, data engineer, administrator cluster, dan profesional IT yang ingin menguasai Elasticsearch secara mendalam dan terstandarisasi.",
   color: "teal",
   icon: "server",
-  examInfo: { questionCount: 12, durationMinutes: 20, passingScore: 70 },
+  examInfo: { questionCount: 18, durationMinutes: 180, passingScore: 70 },
   modules: [
     {
-      slug: "pengenalan-elasticsearch",
-      title: "Pengenalan Elasticsearch",
+      slug: "strings-in-elasticsearch",
+      title: "Strings in Elasticsearch",
       level: "Dasar",
-      durationMinutes: 25,
-      intro:
-        "Modul pertama ini membangun fondasi konseptual: apa itu Elasticsearch, bagaimana data diorganisasikan, dan bagaimana berkomunikasi dengan REST API.",
+      durationMinutes: 20,
+      intro: "Pelajari perbedaan mendasar antara tipe data string (text vs keyword) di Elasticsearch, serta bagaimana proses analisis teks mengubah dokumen Anda sebelum disimpan.",
       sections: [
         {
-          heading: "Apa itu Elasticsearch?",
+          heading: "Perbedaan Antara Text dan Keyword",
           paragraphs: [
-            "Elasticsearch adalah mesin pencarian dan analitik terdistribusi yang dibangun di atas Apache Lucene. Data disimpan sebagai dokumen JSON dan dapat dicari hampir real-time, biasanya dalam hitungan detik setelah ditulis.",
-            "Elasticsearch sangat populer untuk pencarian teks penuh, analitik log, observabilitas, dan keamanan. Ia dirancang untuk skala horizontal: menambah node baru berarti menambah kapasitas.",
-          ],
-        },
-        {
-          heading: "Konsep inti: indeks, dokumen, dan shard",
-          paragraphs: [
-            "Dokumen adalah unit data terkecil, berupa objek JSON. Kumpulan dokumen sejenis disimpan dalam indeks. Setiap indeks dipecah menjadi satu atau lebih shard (pecahan) agar bisa didistribusikan ke banyak node.",
-            "Setiap shard dapat memiliki replica (salinan) untuk ketersediaan tinggi dan mempercepat pencarian paralel.",
+            "Dalam Elasticsearch, data string dapat dipetakan menjadi dua tipe utama: 'text' atau 'keyword'. Memahami perbedaan keduanya sangat krusial karena menentukan bagaimana data dapat dicari dan diagregasi.",
+            "'text' digunakan untuk pencarian teks penuh (full-text search). Nilainya akan diproses oleh analyzer (dipecah menjadi kata-kata, diturunkan hurufnya, dll) sebelum disimpan ke inverted index. Sebaliknya, 'keyword' digunakan untuk pencarian nilai persis (exact match), penyaringan (filtering), pengurutan (sorting), dan agregasi. Nilai keyword disimpan utuh apa adanya."
           ],
           codeExample: {
-            title: "Membuat indeks dengan 1 shard utama dan 1 replica",
+            title: "Contoh Mapping untuk Text dan Keyword",
             lang: "json",
-            code: `PUT /produk\n{\n  "settings": {\n    "number_of_shards": 1,\n    "number_of_replicas": 1\n  }\n}`,
-          },
+            code: `PUT /indeks-produk\n{\n  "mappings": {\n    "properties": {\n      "deskripsi": { "type": "text" },\n      "kategori": { "type": "keyword" }\n    }\n  }\n}`
+          }
         },
         {
-          heading: "Berkomunikasi lewat REST API",
+          heading: "Proses Analisis Teks (Text Analysis)",
           paragraphs: [
-            "Semua operasi dilakukan lewat HTTP: GET untuk membaca, PUT/POST untuk menulis, DELETE untuk menghapus. Endpoint diawali nama indeks, misalnya GET /produk/_search untuk mencari di indeks produk.",
-            "Di Kibana, Dev Tools menyediakan konsol untuk menjalankan request seperti contoh di bawah tanpa perlu menulis curl.",
+            "Ketika sebuah field bertipe 'text' diindeks, ia melewati proses analisis sebelum disimpan ke dalam inverted index. Proses ini dikelola oleh Analyzer yang terdiri dari tiga komponen berurutan: Character Filters (membersihkan karakter), Tokenizer (memotong teks menjadi token), dan Token Filters (memodifikasi token, mis. lowercase).",
+            "Standard Analyzer (default) memotong teks berdasarkan batas kata (menggunakan tokenizer standar) dan mengubah semua huruf menjadi huruf kecil (lowercase)."
           ],
           codeExample: {
-            title: "Memeriksa kesehatan cluster",
-            lang: "bash",
-            code: `curl -X GET "http://localhost:9200/_cluster/health?pretty"`,
-          },
-        },
+            title: "Menguji Analyzer Bawaan dengan API _analyze",
+            lang: "json",
+            code: `POST /_analyze\n{\n  "analyzer": "standard",\n  "text": "Belajar Elasticsearch sangat mudah!"\n}`
+          }
+        }
       ],
       keyPoints: [
-        "Elasticsearch dibangun di atas Apache Lucene dan bersifat terdistribusi.",
-        "Dokumen adalah objek JSON; dokumen dikelompokkan dalam indeks.",
-        "Indeks dipecah menjadi shard; replica memberikan redundansi.",
-        "Interaksi utama melalui REST API (GET, PUT, POST, DELETE).",
-        "Data tersedia untuk dicari hampir real-time (near real-time).",
+        "Field 'text' digunakan untuk pencarian teks penuh dan melewati proses analisis teks.",
+        "Field 'keyword' digunakan untuk pencocokan nilai persis (exact match), filter, sorting, dan agregasi.",
+        "Proses analisis terdiri dari Character Filters, Tokenizer, dan Token Filters.",
+        "Standard Analyzer memecah teks menjadi kata dan mengubahnya menjadi huruf kecil."
       ],
       quiz: [
         {
           id: "eng-m1-q1",
-          prompt: "Apa yang dimaksud dengan dokumen dalam Elasticsearch?",
-          options: [
-            "File PDF yang diunggah ke cluster",
-            "Unit data terkecil berupa objek JSON",
-            "Konfigurasi mapping indeks",
-            "Log sistem operasi node",
-          ],
+          prompt: "Tipe data string mana yang paling cocok digunakan untuk agregasi atau filtering kategori?",
+          options: ["text", "keyword", "nested", "object"],
           answerIndex: 1,
-          explanation:
-            "Dokumen adalah unit data terkecil di Elasticsearch dan selalu berbentuk objek JSON yang disimpan dalam sebuah indeks.",
+          explanation: "Field bertipe keyword disimpan utuh tanpa dianalisis, menjadikannya ideal untuk operasi pencarian persis, filter, sorting, dan agregasi."
         },
         {
           id: "eng-m1-q2",
-          prompt: "Mengapa indeks dipecah menjadi shard?",
-          options: [
-            "Agar mapping lebih sederhana",
-            "Agar data dapat didistribusikan ke banyak node dan diskalakan horizontal",
-            "Agar query lebih lambat tapi aman",
-            "Agar dokumen terenkripsi otomatis",
-          ],
+          prompt: "API apa yang digunakan untuk menguji bagaimana suatu teks diproses oleh sebuah analyzer?",
+          options: ["/_search", "/_analyze", "/_cat/indices", "/_cluster/health"],
           answerIndex: 1,
-          explanation:
-            "Shard memungkinkan indeks dibagi ke beberapa node sehingga kapasitas penyimpanan dan pencarian meningkat seiring penambahan node.",
-        },
-        {
-          id: "eng-m1-q3",
-          prompt: "HTTP method apa yang digunakan untuk membaca hasil pencarian?",
-          options: ["DELETE", "PUT", "GET", "PATCH"],
-          answerIndex: 2,
-          explanation:
-            "Pencarian dilakukan dengan GET (atau POST) ke endpoint _search, misalnya GET /produk/_search.",
-        },
-        {
-          id: "eng-m1-q4",
-          prompt: "Apa fungsi replica shard?",
-          options: [
-            "Mempercepat penulisan mapping",
-            "Menyediakan salinan shard untuk ketersediaan tinggi dan pencarian paralel",
-            "Menghapus dokumen lama secara otomatis",
-            "Mengubah tipe data field",
-          ],
-          answerIndex: 1,
-          explanation:
-            "Replica adalah salinan shard utama yang menjaga data tetap tersedia saat node gagal dan dapat melayani request pencarian.",
-        },
-      ],
+          explanation: "API POST /_analyze digunakan untuk menguji analyzer dan melihat token-token yang dihasilkan dari input teks tertentu."
+        }
+      ]
     },
     {
-      slug: "indexing-dan-dokumen",
-      title: "Indexing & Dokumen",
+      slug: "overview-of-mappings",
+      title: "Overview of Mappings",
       level: "Dasar",
-      durationMinutes: 30,
-      intro:
-        "Pelajari cara menulis, membaca, memperbarui, dan menghapus dokumen, serta mengenal operasi bulk untuk penulisan massal yang efisien.",
+      durationMinutes: 20,
+      intro: "Mapping adalah skema dari indeks Elasticsearch. Pelajari perbedaan antara mapping dinamis dan eksplisit serta bagaimana mendesain mapping yang optimal.",
       sections: [
         {
-          heading: "Menulis dokumen",
+          heading: "Definisi dan Fungsi Mapping",
           paragraphs: [
-            "Dokumen ditulis ke indeks dengan PUT (ID ditentukan sendiri) atau POST (ID dibuat otomatis). Jika dokumen dengan ID yang sama sudah ada, PUT akan menimpanya sepenuhnya.",
-            "Setiap dokumen memiliki metadata seperti _index, _id, dan _version. Nomor versi bertambah setiap kali dokumen diubah.",
-          ],
-          codeExample: {
-            title: "Menulis dokumen dengan ID eksplisit",
-            lang: "json",
-            code: `PUT /produk/_doc/1\n{\n  "nama": "Laptop Pro 14",\n  "harga": 18500000,\n  "kategori": "elektronik",\n  "stok": 12\n}`,
-          },
+            "Mapping adalah proses menentukan bagaimana dokumen and field di dalamnya disimpan dan diindeks. Mapping mendefinisikan tipe data untuk setiap field, serta parameter khusus yang mengontrol bagaimana field tersebut diproses oleh Lucene.",
+            "Melalui mapping, Anda mengonfigurasi properti seperti tipe field (date, keyword, integer), format tanggal, dan apakah field tersebut harus diindeks atau tidak."
+          ]
         },
         {
-          heading: "Membaca, memperbarui, menghapus",
+          heading: "Dynamic Mapping vs Explicit Mapping",
           paragraphs: [
-            "GET /produk/_doc/1 membaca dokumen. Pembaruan parsial dilakukan dengan POST /_update sehingga Anda tidak perlu mengirim ulang seluruh dokumen. DELETE menghapus dokumen berdasarkan ID.",
-            "Perubahan dokumen tidak langsung terlihat di pencarian sampai proses refresh terjadi (default setiap 1 detik).",
+            "Elasticsearch memiliki fitur Dynamic Mapping di mana ia otomatis menebak tipe data field baru saat dokumen pertama kali dimasukkan. Namun, dynamic mapping sering kali tidak optimal (misal, string ditebak sebagai text + keyword multi-field).",
+            "Explicit Mapping memungkinkan Anda mendefinisikan struktur indeks secara presisi sebelum memasukkan data. Ini sangat direkomendasikan untuk lingkungan produksi agar menghemat penyimpanan dan menjaga keakuratan query."
           ],
           codeExample: {
-            title: "Memperbarui sebagian field",
+            title: "Membuat Indeks dengan Explicit Mapping",
             lang: "json",
-            code: `POST /produk/_update/1\n{\n  "doc": {\n    "stok": 10\n  }\n}`,
-          },
-        },
-        {
-          heading: "Bulk API untuk penulisan massal",
-          paragraphs: [
-            "Bulk API memungkinkan banyak operasi (index, update, delete) dalam satu request HTTP. Ini jauh lebih efisien dibanding mengirim satu request per dokumen.",
-            "Formatnya NDJSON: setiap baris aksi diikuti baris payload. Perhatikan bahwa setiap baris harus diakhiri newline.",
-          ],
-          codeExample: {
-            title: "Menulis banyak dokumen sekaligus",
-            lang: "json",
-            code: `POST /produk/_bulk\n{ "index": { "_id": "2" } }\n{ "nama": "Mouse Wireless", "harga": 250000, "kategori": "aksesori" }\n{ "index": { "_id": "3" } }\n{ "nama": "Keyboard Mekanik", "harga": 950000, "kategori": "aksesori" }`,
-          },
-        },
+            code: `PUT /indeks-buku\n{\n  "mappings": {\n    "properties": {\n      "judul": { "type": "text" },\n      "stok": { "type": "integer" },\n      "terbit": { "type": "date", "format": "yyyy-MM-dd" }\n    }\n  }\n}`
+          }
+        }
       ],
       keyPoints: [
-        "PUT menulis/menimpa dokumen dengan ID tertentu; POST membuat ID otomatis.",
-        "POST /_update memungkinkan pembaruan parsial tanpa menimpa seluruh dokumen.",
-        "Refresh default 1 detik membuat pencarian bersifat near real-time.",
-        "Bulk API menggabungkan banyak operasi dalam satu request NDJSON.",
-        "Nomor _version bertambah pada setiap perubahan dokumen.",
+        "Mapping bertindak sebagai skema database untuk indeks di Elasticsearch.",
+        "Dynamic mapping otomatis menebak tipe data, tetapi kurang optimal untuk produksi.",
+        "Explicit mapping memberikan kontrol penuh atas struktur data dan efisiensi ruang disk.",
+        "Sekali field dipetakan, tipe datanya umumnya tidak bisa diubah langsung tanpa reindex."
       ],
       quiz: [
         {
           id: "eng-m2-q1",
-          prompt: "Perintah apa untuk memperbarui hanya field stok tanpa menimpa seluruh dokumen?",
+          prompt: "Apa kelemahan utama mengandalkan Dynamic Mapping untuk lingkungan produksi?",
           options: [
-            "PUT /produk/_doc/1 dengan seluruh isi dokumen",
-            "POST /produk/_update/1 dengan body doc",
-            "DELETE lalu tulis ulang",
-            "GET /produk/_doc/1",
+            "Elasticsearch akan menolak semua dokumen baru",
+            "Tipe data yang ditebak otomatis bisa tidak optimal dan memakan ruang disk lebih besar",
+            "Dynamic mapping menonaktifkan pencarian teks penuh",
+            "Dynamic mapping memperlambat cluster hingga tidak responsif"
           ],
           answerIndex: 1,
-          explanation:
-            "Endpoint _update menerima objek doc berisi field yang ingin diubah, sehingga field lain tetap utuh.",
+          explanation: "Dynamic mapping menebak string sebagai gabungan text dan keyword, yang menggandakan beban indexing dan meningkatkan konsumsi penyimpanan disk secara signifikan."
         },
         {
           id: "eng-m2-q2",
-          prompt: "Mengapa dokumen baru kadang belum muncul di hasil pencarian?",
+          prompt: "Apakah Anda bisa mengubah tipe data suatu field dari integer ke keyword pada indeks yang sudah aktif secara langsung?",
           options: [
-            "Dokumen gagal ditulis",
-            "Indeks belum di-refresh (default setiap 1 detik)",
-            "Mapping salah tipe",
-            "Replica belum dibuat",
+            "Bisa, langsung jalankan PUT /index/_mapping",
+            "Tidak bisa, Anda harus membuat indeks baru dengan mapping baru lalu melakukan reindex",
+            "Bisa, dengan merestart cluster",
+            "Bisa, dengan menjalankan API _update"
           ],
           answerIndex: 1,
-          explanation:
-            "Elasticsearch bersifat near real-time: dokumen baru dapat dicari setelah proses refresh, yang default-nya berjalan tiap 1 detik.",
-        },
-        {
-          id: "eng-m2-q3",
-          prompt: "Apa keunggulan utama Bulk API?",
-          options: [
-            "Mengenkripsi dokumen otomatis",
-            "Mengurangi jumlah request HTTP untuk banyak operasi tulis",
-            "Membuat mapping otomatis lebih akurat",
-            "Menghapus indeks kosong",
-          ],
-          answerIndex: 1,
-          explanation:
-            "Bulk API mengemas banyak operasi index/update/delete dalam satu request, mengurangi overhead jaringan dan meningkatkan throughput.",
-        },
-        {
-          id: "eng-m2-q4",
-          prompt: "Apa yang terjadi jika PUT /produk/_doc/1 dijalankan padahal dokumen _id 1 sudah ada?",
-          options: [
-            "Request ditolak dengan error 409",
-            "Dokumen lama ditimpa sepenuhnya oleh dokumen baru",
-            "Field digabung otomatis",
-            "Dokumen dipindah ke indeks lain",
-          ],
-          answerIndex: 1,
-          explanation:
-            "PUT bersifat replace: dokumen dengan _id yang sama akan ditimpa seluruhnya dan _version bertambah.",
-        },
-      ],
+          explanation: "Struktur inverted index tidak dapat diubah di tempat karena data lama sudah terindeks. Perubahan tipe data mengharuskan pembuatan indeks baru dan migrasi data lewat Reindex API."
+        }
+      ]
     },
     {
-      slug: "mapping-dan-analisis-teks",
-      title: "Mapping & Analisis Teks",
-      level: "Menengah",
-      durationMinutes: 35,
-      intro:
-        "Mapping menentukan tipe data setiap field. Modul ini membahas tipe penting, perbedaan text vs keyword, dan bagaimana analyzer memproses teks.",
+      slug: "types-and-parameters",
+      title: "Types and Parameters",
+      level: "Dasar",
+      durationMinutes: 25,
+      intro: "Menyelami berbagai tipe data bawaan Elasticsearch serta parameter mapping penting seperti copy_to, fields, dan null_value.",
       sections: [
         {
-          heading: "Apa itu mapping?",
+          heading: "Tipe Data Core dan Kompleks",
           paragraphs: [
-            "Mapping adalah skema indeks: definisi tipe data tiap field seperti text, keyword, integer, date, atau boolean. Elasticsearch dapat menebak tipe secara dinamis, tetapi untuk produksi sebaiknya mapping didefinisikan eksplisit.",
-            "Tipe field memengaruhi cara data diindeks dan dicari, sehingga kesalahan mapping sering menjadi sumber hasil pencarian yang aneh.",
-          ],
-          codeExample: {
-            title: "Mapping eksplisit untuk indeks produk",
-            lang: "json",
-            code: `PUT /produk\n{\n  "mappings": {\n    "properties": {\n      "nama":     { "type": "text" },\n      "kategori": { "type": "keyword" },\n      "harga":    { "type": "long" },\n      "dibuat":   { "type": "date" }\n    }\n  }\n}`,
-          },
+            "Elasticsearch mendukung tipe data core seperti numerik (integer, long, float), date, boolean, dan binary. Selain itu, terdapat tipe kompleks seperti object (hirarki dokumen) dan nested.",
+            "Tipe 'nested' adalah varian khusus dari object yang memungkinkan setiap objek di dalam array diindeks secara independen, sehingga relasi antar field di dalam satu sub-objek tetap terjaga saat dicari."
+          ]
         },
         {
-          heading: "text vs keyword",
+          heading: "Parameter Mapping Penting",
           paragraphs: [
-            "Field text dianalisis: dipecah menjadi token, diubah ke huruf kecil, lalu diindeks untuk pencarian teks penuh (match). Field keyword disimpan utuh apa adanya, cocok untuk filter, sorting, dan agregasi (term).",
-            "Kesalahan umum pemula adalah menjalankan query term pada field text atau match pada field keyword dan bingung mengapa hasilnya tidak sesuai.",
-          ],
-        },
-        {
-          heading: "Analyzer dan proses analisis",
-          paragraphs: [
-            "Analyzer terdiri dari character filter, tokenizer, dan token filter. Standard analyzer adalah default: memecah teks berdasarkan kata dan menurunkan huruf.",
-            "API _analyze sangat berguna untuk melihat token hasil analisis sebelum Anda men-debug query.",
+            "1. 'fields' (multi-fields): Memetakan satu field dengan beberapa cara. Contoh: nama sebagai 'text' untuk pencarian, sekaligus 'keyword' untuk sorting.",
+            "2. 'copy_to': Menggabungkan nilai dari beberapa field ke dalam satu grup field tersembunyi untuk pencarian yang lebih mudah.",
+            "3. 'null_value': Mengganti nilai null eksplisit dengan nilai pengganti standar agar data kosong tersebut dapat dicari."
           ],
           codeExample: {
-            title: "Menguji analyzer bawaan",
+            title: "Mapping Menggunakan Multi-Fields dan Copy_To",
             lang: "json",
-            code: `POST /_analyze\n{\n  "analyzer": "standard",\n  "text": "Laptop Gaming Murah 2024"\n}`,
-          },
-        },
+            code: `PUT /indeks-karyawan\n{\n  "mappings": {\n    "properties": {\n      "nama_depan": {\n        "type": "text",\n        "copy_to": "nama_lengkap"\n      },\n      "nama_belakang": {\n        "type": "text",\n        "copy_to": "nama_lengkap"\n      },\n      "nama_lengkap": {\n        "type": "text"\n      },\n      "kota": {\n        "type": "text",\n        "fields": {\n          "raw": { "type": "keyword" }\n        }\n      }\n    }\n  }\n}`
+          }
+        }
       ],
       keyPoints: [
-        "Mapping adalah skema tipe data field dalam indeks.",
-        "text dianalisis untuk pencarian teks penuh; keyword disimpan utuh untuk filter dan agregasi.",
-        "Query term cocok untuk keyword; query match cocok untuk text.",
-        "Analyzer = character filter + tokenizer + token filter.",
-        "Gunakan API _analyze untuk men-debug tokenisasi.",
+        "Tipe data nested mempertahankan relasi antar properti dari objek di dalam array.",
+        "Multi-fields (parameter 'fields') memungkinkan pengindeksan field string sebagai text sekaligus keyword.",
+        "Parameter 'copy_to' menggabungkan beberapa field ke dalam satu field tujuan tunggal.",
+        "Parameter 'null_value' mendefinisikan nilai default untuk mengganti nilai null saat pencarian."
       ],
       quiz: [
         {
           id: "eng-m3-q1",
-          prompt: "Field mana yang tepat untuk filter dan agregasi nilai persis seperti kategori?",
-          options: ["text", "keyword", "date", "binary"],
+          prompt: "Kapan Anda harus menggunakan tipe data 'nested' daripada tipe 'object' biasa?",
+          options: [
+            "Saat Anda ingin menghemat penggunaan RAM",
+            "Saat Anda perlu mempertahankan korelasi logis antar properti dari array of objects saat query dijalankan",
+            "Saat Anda ingin mengindeks file PDF atau Word",
+            "Saat Anda ingin melakukan agregasi tanggal"
+          ],
           answerIndex: 1,
-          explanation:
-            "keyword menyimpan nilai utuh tanpa analisis sehingga cocok untuk term query, sorting, dan agregasi terms.",
+          explanation: "Pada tipe object biasa, array of objects diratakan (flattened) sehingga relasi antar properti hilang. Tipe nested mengindeks setiap sub-dokumen secara terpisah untuk mempertahankan korelasi."
         },
         {
           id: "eng-m3-q2",
-          prompt: "Apa yang dilakukan analyzer terhadap field text?",
+          prompt: "Jika field 'kota' didefinisikan dengan multi-fields bernama 'raw', bagaimana Anda merujuk ke versi keyword-nya saat melakukan agregasi?",
           options: [
-            "Mengenkripsi isi field",
-            "Memecah teks menjadi token dan menormalisasinya (mis. huruf kecil)",
-            "Mengubah tipe menjadi keyword",
-            "Menghapus field kosong",
+            "kota",
+            "kota.raw",
+            "raw.kota",
+            "kota[raw]"
           ],
           answerIndex: 1,
-          explanation:
-            "Analyzer men-tokenisasi teks dan menerapkan normalisasi seperti lowercase sehingga pencarian teks penuh menjadi fleksibel.",
-        },
-        {
-          id: "eng-m3-q3",
-          prompt: "API apa yang digunakan untuk melihat hasil tokenisasi sebuah analyzer?",
-          options: ["/_cluster/health", "/_cat/indices", "/_analyze", "/_search"],
-          answerIndex: 2,
-          explanation:
-            "POST /_analyze menampilkan daftar token yang dihasilkan analyzer dari teks input, sangat berguna untuk debugging.",
-        },
-        {
-          id: "eng-m3-q4",
-          prompt: "Query term pada field text sering tidak menemukan dokumen karena…",
-          options: [
-            "term hanya bekerja di Kibana",
-            "nilai field text sudah dipecah dan dinormalisasi menjadi token",
-            "field text tidak bisa dicari",
-            "term membutuhkan agregasi",
-          ],
-          answerIndex: 1,
-          explanation:
-            "term mencari kecocokan persis pada token terindeks. Karena teks sudah dianalisis (mis. di-lowercase dan dipecah), nilai asli sering tidak cocok persis.",
-        },
-      ],
+          explanation: "Sub-field multi-fields dirujuk dengan menggunakan notasi titik (dot notation), yaitu <nama_field_utama>.<nama_sub_field>, jadi: 'kota.raw'."
+        }
+      ]
     },
     {
-      slug: "query-dsl",
-      title: "Query DSL",
-      level: "Menengah",
-      durationMinutes: 40,
-      intro:
-        "Query DSL adalah bahasa utama pencarian Elasticsearch. Kuasi match, term, range, bool, dan perbedaan konteks query vs filter.",
+      slug: "full-text-queries",
+      title: "Full Text Queries",
+      level: "Dasar",
+      durationMinutes: 25,
+      intro: "Menguasai pencarian teks penuh menggunakan query match, match_phrase, dan multi_match untuk mencari dokumen berdasarkan relevansi linguistik.",
       sections: [
         {
-          heading: "Full-text search dengan match",
+          heading: "Match Query dan Relevansi Skor",
           paragraphs: [
-            "Query match adalah andalan pencarian teks penuh. Teks input dianalisis dulu, lalu dicocokkan dengan token terindeks. Skor relevansi (_score) menentukan urutan hasil.",
-            "match_phrase mencari frasa berurutan, sedangkan multi_match mencari di beberapa field sekaligus.",
+            "Query 'match' adalah query default untuk melakukan pencarian teks penuh pada field bertipe 'text'. Teks input yang diberikan oleh pengguna akan dianalisis terlebih dahulu menggunakan analyzer yang dipasang pada field tersebut.",
+            "Setelah itu, Elasticsearch mencari token yang cocok di inverted index dan menghitung skor relevansi (_score) menggunakan algoritma BM25. Dokumen dengan skor tertinggi akan dikembalikan di posisi teratas."
           ],
           codeExample: {
-            title: "Pencarian teks penuh sederhana",
+            title: "Query Match Sederhana",
             lang: "json",
-            code: `GET /produk/_search\n{\n  "query": {\n    "match": {\n      "nama": "laptop gaming"\n    }\n  }\n}`,
-          },
+            code: `GET /buku/_search\n{\n  "query": {\n    "match": {\n      "deskripsi": "pemrograman web react"\n    }\n  }\n}`
+          }
         },
         {
-          heading: "Exact match dengan term dan range",
+          heading: "Match Phrase dan Multi Match",
           paragraphs: [
-            "term mencari kecocokan persis pada field keyword atau numerik. range menyaring nilai dalam rentang (gt, gte, lt, lte) dan sangat umum dipakai untuk harga, tanggal, atau angka.",
+            "'match_phrase' digunakan jika Anda ingin mencari dokumen yang berisi kata-kata pencarian dalam urutan yang tepat dan saling berdekatan. Anda bisa mengatur toleransi jarak kata dengan parameter 'slop'.",
+            "'multi_match' memungkinkan Anda mencari kata kunci yang sama di beberapa field sekaligus, serta menentukan bagaimana skor dari masing-masing field digabungkan."
           ],
           codeExample: {
-            title: "Filter kategori dan rentang harga",
+            title: "Query Multi Match dan Match Phrase",
             lang: "json",
-            code: `GET /produk/_search\n{\n  "query": {\n    "bool": {\n      "filter": [\n        { "term": { "kategori": "elektronik" } },\n        { "range": { "harga": { "gte": 1000000, "lte": 20000000 } } }\n      ]\n    }\n  }\n}`,
-          },
-        },
-        {
-          heading: "bool: menggabungkan banyak klausa",
-          paragraphs: [
-            "Klausa must (harus cocok, memengaruhi skor), filter (harus cocok, tanpa skor, lebih cepat dan ter-cache), should (opsional, menaikkan skor), dan must_not (tidak boleh cocok).",
-            "Aturan praktis: gunakan filter untuk kondisi ya/tidak seperti status atau rentang tanggal, dan must untuk pencarian teks yang perlu skor relevansi.",
-          ],
-          codeExample: {
-            title: "Kombinasi must + filter + must_not",
-            lang: "json",
-            code: `GET /produk/_search\n{\n  "query": {\n    "bool": {\n      "must": [\n        { "match": { "nama": "laptop" } }\n      ],\n      "filter": [\n        { "term": { "kategori": "elektronik" } }\n      ],\n      "must_not": [\n        { "term": { "stok": 0 } }\n      ]\n    }\n  }\n}`,
-          },
-        },
+            code: `GET /buku/_search\n{\n  "query": {\n    "multi_match": {\n      "query": "belajar elasticsearch",\n      "fields": ["judul^3", "deskripsi"],\n      "type": "best_fields"\n    }\n  }\n}`
+          }
+        }
       ],
       keyPoints: [
-        "match untuk teks penuh dengan skor relevansi; term untuk kecocokan persis.",
-        "range menyaring rentang nilai numerik atau tanggal.",
-        "bool menggabungkan must, filter, should, dan must_not.",
-        "Konteks filter tidak menghitung skor dan dapat di-cache — lebih cepat.",
-        "Gunakan filter untuk kondisi biner, must untuk relevansi.",
+        "Query match menganalisis teks pencarian dan mencari kecocokan token di inverted index.",
+        "Skor relevansi (_score) secara default dihitung menggunakan algoritma BM25.",
+        "Query match_phrase mewajibkan kata pencarian muncul dalam urutan yang persis.",
+        "Query multi_match melakukan pencarian di banyak field sekaligus; tanda ^3 memberikan bobot (boosting) 3 kali lebih tinggi pada field terkait."
       ],
       quiz: [
         {
           id: "eng-m4-q1",
-          prompt: "Klausa bool mana yang cocok untuk menyaring tanpa memengaruhi skor relevansi?",
-          options: ["must", "should", "filter", "must_not"],
+          prompt: "Apa fungsi dari boosting judul^3 pada query multi_match?",
+          options: [
+            "Membatasi hasil pencarian hanya di 3 dokumen",
+            "Membagi skor relevansi field judul dengan 3",
+            "Meningkatkan kontribusi skor relevansi dari field judul sebanyak 3 kali lipat",
+            "Mengindeks field judul sebanyak 3 kali"
+          ],
           answerIndex: 2,
-          explanation:
-            "Klausa filter berjalan dalam konteks filter: hasilnya ya/tidak, tidak menghitung _score, dan bisa di-cache sehingga lebih cepat.",
+          explanation: "Tanda caret (^) diikuti angka digunakan untuk boosting, yang berarti meningkatkan kontribusi atau bobot skor relevansi dari field tersebut dibandingkan field lainnya."
         },
         {
           id: "eng-m4-q2",
-          prompt: "Query apa yang tepat untuk mencari frasa teks yang dianalisis?",
-          options: ["term", "match", "exists", "ids"],
-          answerIndex: 1,
-          explanation:
-            "match menganalisis input seperti analyzer field, sehingga cocok untuk pencarian teks penuh pada field text.",
-        },
-        {
-          id: "eng-m4-q3",
-          prompt: "Dalam range query, arti 'gte' adalah…",
+          prompt: "Query mana yang digunakan untuk memastikan kata pencarian berada bersebelahan dengan urutan yang tepat?",
           options: [
-            "greater than equal (lebih besar atau sama dengan)",
-            "get the element",
-            "group then exclude",
-            "greater than exactly",
+            "match",
+            "term",
+            "match_phrase",
+            "exists"
           ],
-          answerIndex: 0,
-          explanation:
-            "gte = greater than or equal, lt = less than, lte = less than or equal, gt = greater than.",
-        },
-        {
-          id: "eng-m4-q4",
-          prompt: "Apa fungsi klausa should dalam bool query?",
-          options: [
-            "Menolak dokumen yang cocok",
-            "Menambah skor dokumen yang cocok, bersifat opsional",
-            "Mewajibkan semua dokumen cocok",
-            "Menghapus field dari hasil",
-          ],
-          answerIndex: 1,
-          explanation:
-            "should bersifat opsional: dokumen yang cocok mendapat skor tambahan sehingga naik peringkat, tetapi tidak wajib cocok.",
-        },
-        {
-          id: "eng-m4-q5",
-          prompt: "Mengapa filter lebih cepat daripada must untuk kondisi ya/tidak?",
-          options: [
-            "Karena filter tidak dianalisis",
-            "Karena filter tidak menghitung skor dan hasilnya dapat di-cache",
-            "Karena filter berjalan di replica saja",
-            "Karena filter memakai bahasa KQL",
-          ],
-          answerIndex: 1,
-          explanation:
-            "Konteks filter melewati perhitungan skor dan Elasticsearch menyimpan cache bitset-nya, sehingga query berulang jauh lebih cepat.",
-        },
-      ],
+          answerIndex: 2,
+          explanation: "Query match_phrase mengevaluasi posisi kata (token position) dan memastikan kata-kata pencarian muncul secara berurutan dan berdekatan di dokumen."
+        }
+      ]
     },
     {
-      slug: "aggregation",
-      title: "Aggregation",
-      level: "Lanjutan",
-      durationMinutes: 40,
-      intro:
-        "Agregasi mengubah data mentah menjadi ringkasan analitik: statistik, pengelompokan, hingga histogram. Ini salah satu topik utama ujian Engineer.",
+      slug: "term-level-queries",
+      title: "Term Level Queries",
+      level: "Dasar",
+      durationMinutes: 20,
+      intro: "Mempelajari query pencocokan persis (exact match) seperti term, range, dan exists yang bekerja langsung pada token terindeks tanpa melalui analisis.",
       sections: [
         {
-          heading: "Dua keluarga besar agregasi",
+          heading: "Karakteristik Term-Level Queries",
           paragraphs: [
-            "Metric aggregation menghitung nilai dari dokumen: avg, sum, min, max, dan stats. Bucket aggregation mengelompokkan dokumen ke dalam ember (bucket): terms, date_histogram, dan range.",
-            "Agregasi dapat disarangkan: bucket di dalam bucket, atau metric di dalam bucket, untuk analisis multi-dimensi.",
+            "Berbeda dengan full-text queries, term-level queries bekerja langsung pada data persis yang tersimpan di inverted index tanpa melalui analisis teks.",
+            "Oleh karena itu, query seperti 'term' sangat cocok untuk mencari nilai pada field bertipe 'keyword', numerik, boolean, atau tanggal. Jika Anda mencari string dengan 'term' pada field 'text' yang di-lowercase, pencarian sering kali gagal jika menggunakan huruf besar."
           ],
           codeExample: {
-            title: "Statistik harga seluruh produk",
+            title: "Query Term untuk Filter Persis",
             lang: "json",
-            code: `GET /produk/_search\n{\n  "size": 0,\n  "aggs": {\n    "statistik_harga": {\n      "stats": { "field": "harga" }\n    }\n  }\n}`,
-          },
+            code: `GET /buku/_search\n{\n  "query": {\n    "term": {\n      "status_terbit": {\n        "value": "published"\n      }\n    }\n  }\n}`
+          }
         },
         {
-          heading: "terms: pengelompokan paling umum",
+          heading: "Range dan Exists Query",
           paragraphs: [
-            "Agregasi terms mengelompokkan dokumen berdasarkan nilai unik suatu field (biasanya keyword) dan menghitung jumlah dokumen per kelompok — mirip GROUP BY di SQL.",
-            "Dikombinasikan dengan metric aggregation, Anda bisa menghitung rata-rata harga per kategori, total penjualan per bulan, dan sebagainya.",
+            "Query 'range' digunakan untuk menyaring data numerik atau tanggal dalam batas tertentu menggunakan operator gte (greater-than-equal), gt, lte, dan lt.",
+            "Query 'exists' menyaring dokumen yang memiliki field tertentu dengan nilai tidak null atau tidak kosong."
           ],
           codeExample: {
-            title: "Rata-rata harga per kategori",
+            title: "Query Range untuk Harga dan Tanggal",
             lang: "json",
-            code: `GET /produk/_search\n{\n  "size": 0,\n  "aggs": {\n    "per_kategori": {\n      "terms": { "field": "kategori" },\n      "aggs": {\n        "rata_harga": {\n          "avg": { "field": "harga" }\n        }\n      }\n    }\n  }\n}`,
-          },
-        },
-        {
-          heading: "date_histogram untuk deret waktu",
-          paragraphs: [
-            "date_histogram mengelompokkan dokumen ke interval waktu (per jam, hari, bulan) dan menjadi tulang punggung grafik deret waktu di Kibana.",
-            "Gunakan calendar_interval untuk interval kalender (day, month) atau fixed_interval untuk interval tetap (30m, 12h).",
-          ],
-          codeExample: {
-            title: "Jumlah transaksi per hari",
-            lang: "json",
-            code: `GET /transaksi/_search\n{\n  "size": 0,\n  "aggs": {\n    "per_hari": {\n      "date_histogram": {\n        "field": "waktu",\n        "calendar_interval": "day"\n      }\n    }\n  }\n}`,
-          },
-        },
+            code: `GET /buku/_search\n{\n  "query": {\n    "range": {\n      "harga": {\n        "gte": 50000,\n        "lte": 150000\n      }\n    }\n  }\n}`
+          }
+        }
       ],
       keyPoints: [
-        "Metric aggregation: avg, sum, min, max, stats.",
-        "Bucket aggregation: terms, range, date_histogram.",
-        "Agregasi bisa disarangkan (nested) untuk analisis multi-dimensi.",
-        "Set size: 0 bila hanya butuh hasil agregasi tanpa dokumen.",
-        "Field untuk agregasi harus keyword/numerik, bukan text teranalisis.",
+        "Term-level queries tidak menganalisis teks pencarian, mencari kecocokan persis.",
+        "Sangat ideal digunakan untuk field bertipe keyword, numerik, boolean, atau date.",
+        "Query range menggunakan gte, gt, lte, dan lt untuk menyaring rentang nilai.",
+        "Query exists mengembalikan dokumen yang memiliki setidaknya satu nilai non-null pada field yang ditentukan."
       ],
       quiz: [
         {
           id: "eng-m5-q1",
-          prompt: "Agregasi apa yang setara dengan GROUP BY di SQL?",
-          options: ["avg", "terms", "stats", "cardinality"],
+          prompt: "Mengapa term query mencari 'Belajar' (B kapital) pada field text dengan standard analyzer sering kali tidak menghasilkan dokumen?",
+          options: [
+            "Because term query is broken",
+            "Karena standard analyzer telah mengubah kata 'Belajar' di dokumen menjadi token lowercase 'belajar', sedangkan term query mencari token persis 'Belajar' yang tidak ada di indeks",
+            "Karena standard analyzer menghapus kata Belajar",
+            "Karena field text menolak term query"
+          ],
           answerIndex: 1,
-          explanation:
-            "terms adalah bucket aggregation yang mengelompokkan dokumen per nilai unik field, mirip GROUP BY.",
+          explanation: "Standard analyzer mengubah semua token menjadi lowercase. Term-level query mencari nilai persis tanpa menganalisis query input, sehingga token 'Belajar' dengan huruf kapital tidak akan cocok dengan 'belajar' di inverted index."
         },
         {
           id: "eng-m5-q2",
-          prompt: "Untuk menghitung rata-rata harga per kategori, strukturnya adalah…",
+          prompt: "Manakah operator range query yang merepresentasikan 'kurang dari' (less than) secara eksklusif?",
           options: [
-            "avg di dalam terms",
-            "terms di dalam avg",
-            "range di dalam date_histogram",
-            "match di dalam filter",
+            "lte",
+            "gte",
+            "lt",
+            "gt"
           ],
-          answerIndex: 0,
-          explanation:
-            "Bucket terms membentuk kelompok kategori, lalu metric avg di dalamnya menghitung rata-rata harga per kelompok.",
-        },
-        {
-          id: "eng-m5-q3",
-          prompt: "Mengapa menambahkan 'size: 0' pada request agregasi?",
-          options: [
-            "Agar indeks tidak penuh",
-            "Agar Elasticsearch tidak mengembalikan dokumen, hanya hasil agregasi",
-            "Agar query lebih lambat",
-            "Agar mapping diperbarui",
-          ],
-          answerIndex: 1,
-          explanation:
-            "size mengatur jumlah dokumen hit yang dikembalikan. Nilai 0 mempercepat request ketika hanya agregasi yang dibutuhkan.",
-        },
-        {
-          id: "eng-m5-q4",
-          prompt: "Agregasi apa yang tepat untuk grafik jumlah transaksi per hari?",
-          options: ["terms", "date_histogram", "cardinality", "geo_distance"],
-          answerIndex: 1,
-          explanation:
-            "date_histogram membagi dokumen ke interval waktu dan menjadi dasar visualisasi deret waktu.",
-        },
-      ],
+          answerIndex: 2,
+          explanation: "lt (less than) berarti kurang dari, sedangkan lte (less than or equal) berarti kurang dari atau sama dengan."
+        }
+      ]
     },
     {
-      slug: "cluster-dan-shard",
-      title: "Cluster, Shard & Manajemen Indeks",
-      level: "Siap Ujian",
-      durationMinutes: 35,
-      intro:
-        "Modul penutup jalur Engineer: kesehatan cluster, alokasi shard, pengaturan indeks, dan praktik manajemen siklus hidup data (ILM).",
+      slug: "combining-queries",
+      title: "Combining Queries",
+      level: "Menengah",
+      durationMinutes: 25,
+      intro: "Belajar menggabungkan banyak klausa query menggunakan bool query dengan klausa must, filter, should, dan must_not untuk logika pencarian yang kompleks.",
       sections: [
         {
-          heading: "Status kesehatan cluster",
+          heading: "Struktur Bool Query",
           paragraphs: [
-            "Cluster health memiliki tiga status: green (semua shard utama dan replica teralokasi), yellow (shard utama aman tetapi ada replica belum teralokasi), dan red (ada shard utama hilang — data tidak lengkap).",
-            "Status yellow sering muncul di cluster satu node karena replica tidak bisa ditempatkan di node yang sama dengan shard utamanya.",
-          ],
-          codeExample: {
-            title: "Memantau kesehatan dan alokasi shard",
-            lang: "bash",
-            code: `curl -X GET "localhost:9200/_cluster/health?pretty"\ncurl -X GET "localhost:9200/_cat/shards?v"\ncurl -X GET "localhost:9200/_cat/indices?v"`,
-          },
+            "Bool Query adalah kontainer utama di Elasticsearch untuk menggabungkan klausa-klausa pencarian lain. Terdiri dari empat klausa:",
+            "1. 'must': Kondisi yang wajib dipenuhi oleh dokumen dan berkontribusi terhadap skor relevansi.",
+            "2. 'filter': Kondisi yang wajib dipenuhi oleh dokumen tetapi TIDAK berkontribusi terhadap skor relevansi.",
+            "3. 'should': Kondisi opsional; dokumen yang cocok akan mendapatkan kenaikan skor relevansi.",
+            "4. 'must_not': Kondisi yang mengecualikan dokumen yang cocok dari hasil pencarian."
+          ]
         },
         {
-          heading: "Strategi shard",
+          heading: "Konteks Query vs Konteks Filter",
           paragraphs: [
-            "Jumlah shard utama hanya bisa diatur saat indeks dibuat (kecuali lewat shrink/split). Terlalu banyak shard kecil membebani memori; terlalu sedikit shard besar menyulitkan distribusi.",
-            "Panduan umum: jaga ukuran shard sekitar 10–50 GB dan hindari ribuan shard kecil (oversharding).",
+            "Klausa di dalam 'must' dan 'should' berjalan dalam Query Context, di mana Elasticsearch menghitung seberapa baik dokumen cocok (skor _score).",
+            "Klausa di dalam 'filter' dan 'must_not' berjalan dalam Filter Context. Di sini, Elasticsearch hanya mengevaluasi kondisi sebagai ya/tidak. Keuntungannya adalah tidak ada overhead perhitungan skor, dan Elasticsearch dapat menyimpan hasil filter di dalam cache memori (Filter Cache), membuat eksekusi berikutnya jauh lebih cepat."
           ],
           codeExample: {
-            title: "Membuat indeks dengan pengaturan shard",
+            title: "Contoh Bool Query Kompleks",
             lang: "json",
-            code: `PUT /logs-2024\n{\n  "settings": {\n    "number_of_shards": 3,\n    "number_of_replicas": 1\n  }\n}`,
-          },
-        },
-        {
-          heading: "Index Lifecycle Management (ILM)",
-          paragraphs: [
-            "ILM mengotomasi siklus hidup indeks deret waktu: fase hot (aktif ditulis), warm (jarang diakses), cold (arsip), hingga delete (dihapus otomatis).",
-            "Kebijakan ILM didefinisikan sekali lalu diterapkan ke banyak indeks melalui index template — praktik standar untuk data log dan metrik.",
-          ],
-          codeExample: {
-            title: "Kebijakan ILM sederhana: hapus setelah 30 hari",
-            lang: "json",
-            code: `PUT /_ilm/policy/logs-policy\n{\n  "policy": {\n    "phases": {\n      "hot": {\n        "actions": {\n          "rollover": { "max_age": "7d", "max_size": "50gb" }\n        }\n      },\n      "delete": {\n        "min_age": "30d",\n        "actions": { "delete": {} }\n      }\n    }\n  }\n}`,
-          },
-        },
+            code: `GET /buku/_search\n{\n  "query": {\n    "bool": {\n      "must": [\n        { "match": { "judul": "elasticsearch" } }\n      ],\n      "filter": [\n        { "term": { "kategori": "teknologi" } },\n        { "range": { "harga": { "lte": 200000 } } }\n      ],\n      "must_not": [\n        { "term": { "stok": 0 } }\n      ]\n    }\n  }\n}`
+          }
+        }
       ],
       keyPoints: [
-        "green: sehat; yellow: replica belum teralokasi; red: ada shard utama hilang.",
-        "Cluster satu node selalu yellow bila replica diset lebih dari 0.",
-        "Jumlah shard utama ditetapkan saat pembuatan indeks.",
-        "Hindari oversharding; targetkan ukuran shard 10–50 GB.",
-        "ILM mengotomasi fase hot → warm → cold → delete.",
+        "Bool query menggabungkan must, filter, should, dan must_not.",
+        "Konteks query (must/should) menghitung skor relevansi dokumen.",
+        "Konteks filter (filter/must_not) melewati proses scoring dan mendukung caching otomatis.",
+        "Gunakan filter untuk penyaringan data statis atau biner seperti status aktif, kategori, atau rentang tanggal."
       ],
       quiz: [
         {
           id: "eng-m6-q1",
-          prompt: "Cluster satu node dengan number_of_replicas: 1 akan berstatus…",
-          options: ["green", "yellow", "red", "blue"],
+          prompt: "Mengapa query filter lebih cepat daripada query must di Elasticsearch?",
+          options: [
+            "Karena filter berjalan di node koordinasi saja",
+            "Karena filter tidak menghitung skor relevansi dan hasilnya dapat disimpan di cache memori",
+            "Karena filter memaksa dokumen langsung dihapus",
+            "Karena filter hanya mencari di primary shard"
+          ],
           answerIndex: 1,
-          explanation:
-            "Replica tidak dapat ditempatkan di node yang sama dengan shard utamanya, sehingga ada replica unassigned dan status menjadi yellow.",
+          explanation: "Konteks filter mengabaikan kalkulasi skor relevansi (scoring) dan menggunakan bitset cache di RAM untuk menyimpan hasil pencocokan biner, sehingga query berulang berjalan sangat instan."
         },
         {
           id: "eng-m6-q2",
-          prompt: "Apa arti status red pada cluster health?",
+          prompt: "Klausa bool query mana yang digunakan untuk mengecualikan dokumen tertentu agar tidak muncul di hasil pencarian?",
           options: [
-            "Semua replica teralokasi",
-            "Ada shard utama yang hilang sehingga data tidak lengkap",
-            "Node kelebihan memori",
-            "Indeks sedang di-rollover",
+            "must",
+            "should",
+            "must_not",
+            "filter"
           ],
-          answerIndex: 1,
-          explanation:
-            "Red berarti setidaknya satu shard utama tidak teralokasi — sebagian data tidak dapat diakses dan perlu investigasi segera.",
-        },
-        {
-          id: "eng-m6-q3",
-          prompt: "Kapan jumlah shard utama sebuah indeks ditentukan?",
-          options: [
-            "Kapan saja lewat _update",
-            "Saat indeks dibuat (hanya bisa diubah lewat shrink/split)",
-            "Setelah data penuh",
-            "Saat cluster restart",
-          ],
-          answerIndex: 1,
-          explanation:
-            "number_of_shards bersifat tetap setelah indeks dibuat. Perubahan hanya dimungkinkan lewat API shrink atau split dengan syarat tertentu.",
-        },
-        {
-          id: "eng-m6-q4",
-          prompt: "Fase ILM apa yang otomatis menghapus indeks lama?",
-          options: ["hot", "warm", "cold", "delete"],
-          answerIndex: 3,
-          explanation:
-            "Fase delete menghapus indeks setelah melewati min_age yang ditentukan, menjaga cluster dari penumpukan data lama.",
-        },
-      ],
+          answerIndex: 2,
+          explanation: "Klausa must_not menyaring dan membuang dokumen yang cocok dengan kondisi di dalamnya dari seluruh daftar hasil pencarian."
+        }
+      ]
     },
+    {
+      slug: "metric-and-bucket-aggregations",
+      title: "Metric and Bucket Aggregations",
+      level: "Menengah",
+      durationMinutes: 25,
+      intro: "Memahami fondasi analitik Elasticsearch dengan membagi agregasi menjadi metric (perhitungan nilai) dan bucket (pengelompokan dokumen).",
+      sections: [
+        {
+          heading: "Metric Aggregations",
+          paragraphs: [
+            "Agregasi di Elasticsearch dibagi menjadi beberapa kategori utama. Metric Aggregations bertugas menghitung nilai numerik dari sekumpulan dokumen.",
+            "Contoh agregasi metrik meliputi: 'avg' (rata-rata), 'sum' (total penjumlahan), 'min' (nilai terkecil), 'max' (nilai terbesar), 'cardinality' (jumlah nilai unik), dan 'stats' (mengembalikan min, max, avg, sum, dan count sekaligus)."
+          ],
+          codeExample: {
+            title: "Agregasi Stats untuk Harga Produk",
+            lang: "json",
+            code: `GET /buku/_search\n{\n  "size": 0,\n  "aggs": {\n    "statistik_harga": {\n      "stats": {\n        "field": "harga"\n      }\n    }\n  }\n}`
+          }
+        },
+        {
+          heading: "Bucket Aggregations",
+          paragraphs: [
+            "Bucket Aggregations berfungsi mirip dengan perintah 'GROUP BY' pada SQL. Agregasi ini tidak menghitung nilai metrik secara langsung, melainkan mengelompokkan dokumen ke dalam ember-ember (buckets) berdasarkan kriteria tertentu.",
+            "Contoh utama bucket aggregations adalah: 'terms' (berdasarkan nilai unik field keyword), 'range' (berdasarkan rentang nilai khusus), dan 'date_histogram' (berdasarkan interval waktu tertentu seperti harian atau bulanan)."
+          ],
+          codeExample: {
+            title: "Agregasi Terms Berdasarkan Kategori",
+            lang: "json",
+            code: `GET /buku/_search\n{\n  "size": 0,\n  "aggs": {\n    "kategori_populer": {\n      "terms": {\n        "field": "kategori.keyword",\n        "size": 5\n      }\n    }\n  }\n}`
+          }
+        }
+      ],
+      keyPoints: [
+        "Metric aggregations menghitung nilai statistik numerik dari dokumen.",
+        "Bucket aggregations mengelompokkan dokumen ke dalam kategori/ember (seperti terms atau histogram).",
+        "Menetapkan parameter 'size': 0 pada pencarian menonaktifkan pengembalian dokumen mentah, mempercepat eksekusi analitik.",
+        "Agregasi terms membutuhkan field bertipe keyword atau numerik, bukan field text yang dianalisis."
+      ],
+      quiz: [
+        {
+          id: "eng-m7-q1",
+          prompt: "Agregasi metrik apa yang digunakan jika Anda ingin menghitung jumlah nilai unik (unique count) dari suatu field?",
+          options: [
+            "sum",
+            "stats",
+            "cardinality",
+            "terms"
+          ],
+          answerIndex: 2,
+          explanation: "Agregasi cardinality memperkirakan jumlah nilai unik yang berbeda (distinct values) pada sebuah field menggunakan algoritma HyperLogLog++."
+        },
+        {
+          id: "eng-m7-q2",
+          prompt: "Mengapa kita sering menambahkan parameter 'size': 0 pada query pencarian yang menggunakan agregasi?",
+          options: [
+            "Untuk menghapus dokumen dari indeks",
+            "Untuk menyembunyikan hasil agregasi",
+            "Untuk menginstruksikan Elasticsearch agar hanya mengembalikan hasil analitik agregasi tanpa memuat dokumen hits",
+            "Untuk membatasi ukuran heap memori"
+          ],
+          answerIndex: 2,
+          explanation: "Size 0 menghemat bandwidth jaringan dan resource komputasi karena cluster tidak perlu memproses dan mengembalikan daftar dokumen pencarian, melainkan langsung memberikan rangkuman analitik."
+        }
+      ]
+    },
+    {
+      slug: "combining-aggregations",
+      title: "Combining Aggregations",
+      level: "Menengah",
+      durationMinutes: 25,
+      intro: "Menyusun analisis data multi-dimensi dengan menyarangkan (nesting) agregasi dan menggunakan pipeline aggregations.",
+      sections: [
+        {
+          heading: "Sub-Aggregations (Nesting)",
+          paragraphs: [
+            "Kekuatan utama agregasi Elasticsearch terletak pada kemampuannya untuk disarangkan (nested). Anda dapat menempatkan sub-agregasi di dalam bucket aggregation.",
+            "Sebagai contoh, Anda dapat membuat bucket berdasarkan kategori produk (terms aggregation), lalu di dalam masing-masing kategori tersebut, Anda menghitung rata-rata harganya (metric avg aggregation). Anda bahkan bisa membuat bucket di dalam bucket lain (misal kategori, lalu sub-bucket tanggal)."
+          ],
+          codeExample: {
+            title: "Menghitung Rata-rata Harga per Kategori",
+            lang: "json",
+            code: `GET /buku/_search\n{\n  "size": 0,\n  "aggs": {\n    "kategori_bucket": {\n      "terms": { "field": "kategori.keyword" },\n      "aggs": {\n        "rata_rata_harga": {\n          "avg": { "field": "harga" }\n        }\n      }\n    }\n  }\n}`
+          }
+        },
+        {
+          heading: "Pipeline Aggregations",
+          paragraphs: [
+            "Pipeline Aggregations melakukan operasi komputasi di atas hasil agregasi lain, bukan dari dokumen mentah. Ini memungkinkan Anda menghitung metrik seperti rata-rata kumulatif, nilai turunan (derivative), atau pengurutan bucket berdasarkan sub-metrik.",
+            "Pipeline aggregations menggunakan parameter 'buckets_path' untuk merujuk pada metrik yang menjadi inputnya."
+          ],
+          codeExample: {
+            title: "Mencari Kategori dengan Rata-rata Harga Termahal",
+            lang: "json",
+            code: `GET /buku/_search\n{\n  "size": 0,\n  "aggs": {\n    "kategori_bucket": {\n      "terms": {\n        "field": "kategori.keyword",\n        "order": { "rata_rata_harga": "desc" }\n      },\n      "aggs": {\n        "rata_rata_harga": {\n          "avg": { "field": "harga" }\n        }\n      }\n    }\n  }\n}`
+          }
+        }
+      ],
+      keyPoints: [
+        "Sub-aggregations memungkinkan analisis multi-dimensi berlapis dengan menyarangkan metrik di dalam bucket.",
+        "Pipeline aggregations memproses data dari output agregasi lain (menggunakan parameter buckets_path).",
+        "Hasil agregasi terms dapat diurutkan (sorting) secara dinamis menggunakan hasil dari sub-agregasi di bawahnya."
+      ],
+      quiz: [
+        {
+          id: "eng-m8-q1",
+          prompt: "Bagaimana cara menyusun struktur agregasi untuk mencari rata-rata rating buku untuk setiap penulis?",
+          options: [
+            "Menaruh agregasi 'avg' rating di dalam agregasi 'terms' penulis",
+            "Menaruh agregasi 'terms' penulis di dalam agregasi 'avg' rating",
+            "Menjalankan dua query terpisah",
+            "Menggunakan pipeline aggregation"
+          ],
+          answerIndex: 0,
+          explanation: "Pertama, buat bucket untuk mengelompokkan dokumen berdasarkan penulis ('terms'), lalu sarangkan (nest) agregasi metrik rata-rata ('avg') di dalam bucket penulis tersebut."
+        },
+        {
+          id: "eng-m8-q2",
+          prompt: "Parameter apa yang wajib didefinisikan pada Pipeline Aggregation untuk menunjuk ke metrik yang akan diolah?",
+          options: [
+            "field",
+            "buckets_path",
+            "source",
+            "target"
+          ],
+          answerIndex: 1,
+          explanation: "Parameter 'buckets_path' digunakan oleh pipeline aggregation untuk menunjuk ke jalur metrik keluaran dari agregasi lain yang ingin dihitung nilainya."
+        }
+      ]
+    },
+    {
+      slug: "changing-data",
+      title: "Changing Data",
+      level: "Menengah",
+      durationMinutes: 25,
+      intro: "Mempelajari teknik memperbarui data secara massal menggunakan update_by_query dan melakukan migrasi schema menggunakan Reindex API.",
+      sections: [
+        {
+          heading: "Update By Query",
+          paragraphs: [
+            "API '_update_by_query' memungkinkan Anda memperbarui banyak dokumen sekaligus dalam satu panggilan API berdasarkan hasil dari sebuah query.",
+            "Secara internal, Elasticsearch mengambil snapshot dari indeks, mencari dokumen yang cocok, lalu menjalankannya melalui Ingest Pipeline atau skrip Painless untuk memperbarui nilai field dokumen tersebut secara massal."
+          ],
+          codeExample: {
+            title: "Menaikkan Harga Semua Buku Kategori Tertentu",
+            lang: "json",
+            code: `POST /buku/_update_by_query\n{\n  "script": {\n    "source": "ctx._source.harga += params.kenaikan",\n    "params": {\n      "kenaikan": 10000\n    }\n  },\n  "query": {\n    "term": {\n      "kategori.keyword": "novel"\n    }\n  }\n}`
+          }
+        },
+        {
+          heading: "Reindex API untuk Migrasi Skema",
+          paragraphs: [
+            "Karena tipe data field yang sudah diindeks tidak dapat diubah di tempat, satu-satunya cara mengubah mapping adalah membuat indeks baru dengan mapping yang benar, lalu menyalin data lama ke indeks baru.",
+            "API '_reindex' dirancang khusus untuk kebutuhan ini. Ia menyalin dokumen dari indeks sumber ke indeks tujuan secara efisien di sisi server."
+          ],
+          codeExample: {
+            title: "Melakukan Reindex ke Indeks Baru",
+            lang: "json",
+            code: `POST /_reindex\n{\n  "source": {\n    "index": "buku-lama"\n  },\n  "dest": {\n    "index": "buku-baru"\n  }\n}`
+          }
+        }
+      ],
+      keyPoints: [
+        "_update_by_query memperbarui semua dokumen yang cocok dengan kriteria query menggunakan skrip atau pipeline.",
+        "Reindex API menyalin data dari indeks asal ke indeks tujuan untuk keperluan perubahan mapping/skema.",
+        "Gunakan parameter 'conflicts': 'proceed' untuk mengabaikan konflik versi dokumen jika ada penulisan data simultan saat update/reindex berjalan."
+      ],
+      quiz: [
+        {
+          id: "eng-m9-q1",
+          prompt: "Mengapa kita membutuhkan Reindex API untuk mengubah tipe data field yang sudah terisi data?",
+          options: [
+            "Karena Elasticsearch tidak mengizinkan query diubah",
+            "Karena inverted index tidak bisa diubah strukturnya di tempat tanpa mengindeks ulang seluruh dokumen dari awal",
+            "Karena reindex otomatis menghapus data duplikat",
+            "Karena reindex mengubah cluster menjadi green"
+          ],
+          answerIndex: 1,
+          explanation: "Struktur inverted index bersifat immutable di disk setelah ditulis. Mengubah tipe field memerlukan pembuatan indeks baru dengan mapping yang diinginkan dan pengindeksan ulang data melalui Reindex API."
+        },
+        {
+          id: "eng-m9-q2",
+          prompt: "Bagaimana cara mencegah _update_by_query berhenti di tengah jalan saat menghadapi konflik versi dokumen?",
+          options: [
+            "Mengatur parameter 'conflicts' ke 'proceed'",
+            "Mengatur parameter 'force' ke true",
+            "Menghapus replica shard terlebih dahulu",
+            "Merestart node master"
+          ],
+          answerIndex: 0,
+          explanation: "Secara default, reindex atau update_by_query akan membatalkan proses jika terjadi konflik versi dokumen. Menyetel 'conflicts': 'proceed' menginstruksikan proses untuk terus berjalan dan melewati dokumen yang berkonflik."
+        }
+      ]
+    },
+    {
+      slug: "enriching-data",
+      title: "Enriching Data",
+      level: "Menengah",
+      durationMinutes: 25,
+      intro: "Mengenal Enrich Processor untuk menggabungkan data dari indeks referensi ke dalam dokumen yang sedang di-index secara real-time.",
+      sections: [
+        {
+          heading: "Konsep Data Enrichment",
+          paragraphs: [
+            "Data enrichment adalah proses menambahkan data kontekstual dari satu indeks referensi ke dalam dokumen baru saat proses ingestion berlangsung.",
+            "Misalnya, jika Anda mengindeks log transaksi keuangan yang hanya berisi 'user_id', Anda dapat menggunakan Enrich Processor untuk mencari data nama dan email pengguna dari indeks 'users' dan menempelkannya ke dalam log transaksi tersebut secara otomatis."
+          ]
+        },
+        {
+          heading: "Langkah Mengonfigurasi Enrich Policy",
+          paragraphs: [
+            "Proses pengayaan data melibatkan tiga langkah utama:",
+            "1. **Buat Enrich Policy**: Tentukan indeks referensi, field pencocokan (match_field), dan field yang ingin disalin (enrich_fields).",
+            "2. **Eksekusi Policy**: Jalankan POST /_enrich/policy/<nama_policy>/_execute untuk membuat indeks sistem readonly terenkripsi khusus yang digunakan untuk pencarian cepat.",
+            "3. **Pasang di Ingest Pipeline**: Hubungkan Enrich Processor di dalam sebuah ingest pipeline, lalu arahkan dokumen baru ke pipeline tersebut."
+          ],
+          codeExample: {
+            title: "Mendefinisikan dan Menjalankan Enrich Policy",
+            lang: "json",
+            code: `PUT /_enrich/policy/user-lookup-policy\n{\n  "match": {\n    "indices": "users",\n    "match_field": "user_id",\n    "enrich_fields": ["nama", "email"]\n  }\n}\n\nPOST /_enrich/policy/user-lookup-policy/_execute`
+          }
+        }
+      ],
+      keyPoints: [
+        "Enrich processor menggabungkan data referensi ke dalam dokumen baru saat diindeks.",
+        "Proses enrichment membutuhkan Enrich Policy yang mendefinisikan relasi kecocokan data.",
+        "Anda harus mengeksekusi (_execute) policy setiap kali data referensi pada indeks sumber mengalami perubahan agar data enrichment tetap mutakhir.",
+        "Operasi enrichment berjalan di Ingest Node sebelum data ditulis ke dalam shard."
+      ],
+      quiz: [
+        {
+          id: "eng-m10-q1",
+          prompt: "Apa yang harus Anda lakukan jika data di dalam indeks referensi berubah agar enrich processor menghasilkan data terbaru?",
+          options: [
+            "Melakukan restart pada seluruh cluster",
+            "Mengeksekusi ulang (_execute) Enrich Policy yang bersangkutan",
+            "Menghapus indeks referensi",
+            "Membuat ingest pipeline baru"
+          ],
+          answerIndex: 1,
+          explanation: "Enrich processor mencari data pada indeks sistem terenkripsi hasil eksekusi policy. Jika data referensi berubah, Anda harus menjalankan API _execute kembali agar indeks sistem tersebut diperbarui."
+        },
+        {
+          id: "eng-m10-q2",
+          prompt: "Node jenis apa dalam arsitektur klaster Elasticsearch yang memproses Ingest Pipeline dan Enrich Processor?",
+          options: [
+            "Master Node",
+            "Data Node",
+            "Ingest Node",
+            "Coordinating Node"
+          ],
+          answerIndex: 2,
+          explanation: "Ingest Node bertanggung jawab mengeksekusi semua langkah pra-pemrosesan di dalam Ingest Pipeline sebelum dokumen diindeks."
+        }
+      ]
+    },
+    {
+      slug: "runtime-fields",
+      title: "Runtime Fields",
+      level: "Lanjutan",
+      durationMinutes: 25,
+      intro: "Membuat field fleksibel secara dinamis tanpa meningkatkan ukuran indeks menggunakan Runtime Fields yang dievaluasi saat query dijalankan.",
+      sections: [
+        {
+          heading: "Apa itu Runtime Fields?",
+          paragraphs: [
+            "Runtime Fields adalah field yang nilainya dihitung secara dinamis saat query dijalankan (on-the-fly), mirip dengan kolom kalkulasi di database SQL tradisional. Field ini tidak disimpan di dalam indeks disk fisik klaster Anda.",
+            "Ini memberikan fleksibilitas luar biasa: Anda dapat memodifikasi skema data tanpa reindexing, mengoreksi kesalahan parsing, atau membuat kolom analisis baru secara instan menggunakan skrip Painless."
+          ]
+        },
+        {
+          heading: "Runtime Fields di Mapping vs Search Request",
+          paragraphs: [
+            "Anda dapat mendefinisikan runtime fields dengan dua cara:",
+            "1. **Di Mapping Indeks**: Didefinisikan di mapping sehingga dapat digunakan oleh siapa saja yang melakukan query ke indeks tersebut.",
+            "2. **Di Search Request**: Didefinisikan secara sementara di dalam body query pencarian, hanya berlaku untuk request tersebut."
+          ],
+          codeExample: {
+            title: "Mendefinisikan Runtime Field dalam Search Request",
+            lang: "json",
+            code: `GET /transaksi/_search\n{\n  "runtime_mappings": {\n    "total_rupiah": {\n      "type": "long",\n      "script": {\n        "source": "emit(doc['harga_usd'].value * 15000)"\n      }\n    }\n  },\n  "fields": [\n    "total_rupiah"\n  ],\n  "query": {\n    "range": {\n      "total_rupiah": {\n        "gte": 1500000\n      }\n    }\n  }\n}`
+          }
+        }
+      ],
+      keyPoints: [
+        "Runtime fields dihitung secara on-the-fly saat query dieksekusi, menghemat penyimpanan disk.",
+        "Logika perhitungan ditulis menggunakan bahasa skrip Painless.",
+        "Menggunakan perintah 'emit()' di dalam skrip Painless untuk mengembalikan nilai field.",
+        "Memiliki performa query yang lebih lambat dibanding field terindeks biasa karena beban kalkulasi dipindah ke runtime CPU."
+      ],
+      quiz: [
+        {
+          id: "eng-m11-q1",
+          prompt: "Apa fungsi dari perintah 'emit()' dalam penulisan skrip Runtime Fields?",
+          options: [
+            "Menghapus dokumen dari memori",
+            "Mengirim nilai kalkulasi skrip agar dikembalikan sebagai nilai runtime field terkait",
+            "Memicu alarm sistem",
+            "Meneruskan query ke cluster lain"
+          ],
+          answerIndex: 1,
+          explanation: "Perintah emit() wajib digunakan di dalam skrip runtime field untuk menetapkan nilai hasil perhitungan yang nantinya ditampilkan di output query."
+        },
+        {
+          id: "eng-m11-q2",
+          prompt: "Apa konsekuensi atau tradeoff terbesar menggunakan Runtime Fields dibandingkan field terindeks biasa?",
+          options: [
+            "Ukuran indeks menjadi jauh lebih besar di disk",
+            "Keamanan data menjadi berkurang",
+            "Kecepatan eksekusi query menjadi lebih lambat karena nilai dihitung setiap kali query berjalan",
+            "Runtime fields tidak bisa digunakan untuk filtering"
+          ],
+          answerIndex: 2,
+          explanation: "Karena nilainya dihitung langsung di CPU saat query dieksekusi (bukan dibaca dari disk inverted index), runtime fields membutuhkan waktu pemrosesan lebih lama saat memproses banyak dokumen."
+        }
+      ]
+    },
+    {
+      slug: "understanding-shards",
+      title: "Understanding Shards",
+      level: "Lanjutan",
+      durationMinutes: 25,
+      intro: "Menyelami arsitektur internal penyimpanan Elasticsearch: bagaimana primary dan replica shard dialokasikan, dan dampaknya pada performa.",
+      sections: [
+        {
+          heading: "Arsitektur Shard Utama dan Replika",
+          paragraphs: [
+            "Satu indeks di Elasticsearch secara fisik dipecah menjadi bagian-bagian lebih kecil bernama Shard. Shard adalah instans Apache Lucene yang berdiri sendiri.",
+            "Terdapat dua tipe shard:",
+            "1. **Primary Shard**: Shard utama tempat dokumen ditulis pertama kali. Jumlah primary shard ditentukan saat pembuatan indeks dan tidak bisa diubah langsung.",
+            "2. **Replica Shard**: Salinan dari primary shard. Berguna untuk toleransi kegagalan (high availability) jika data node mati, serta membantu mempercepat pencarian dengan melayani query baca secara paralel."
+          ]
+        },
+        {
+          heading: "Manajemen Shard yang Optimal",
+          paragraphs: [
+            "Memiliki terlalu banyak shard kecil (oversharding) menguras memori heap JVM karena setiap shard memiliki overhead metadata tersendiri.",
+            "Aturan umum praktis manajemen shard:",
+            "- Usahakan ukuran fisik shard berkisar antara **10 GB hingga 50 GB**.",
+            "- Jaga jumlah total shard di satu node di bawah 20 shard per GB heap memory yang dialokasikan."
+          ],
+          codeExample: {
+            title: "Memeriksa Alokasi Shard di Klaster",
+            lang: "json",
+            code: `GET /_cat/shards?v=true&h=index,shard,prirep,state,unassigned.reason`
+          }
+        }
+      ],
+      keyPoints: [
+        "Shard adalah unit penyimpanan fisik terkecil yang merupakan instans Apache Lucene.",
+        "Primary Shard melayani operasi tulis; Replica Shard melayani redundansi dan optimasi query baca.",
+        "Jumlah primary shard bersifat immutable (kecuali menggunakan Shrink atau Split API).",
+        "Ukuran shard ideal untuk kinerja optimal adalah antara 10 GB hingga 50 GB."
+      ],
+      quiz: [
+        {
+          id: "eng-m12-q1",
+          prompt: "Apa status cluster health jika semua primary shard sukses dialokasikan tetapi ada beberapa replica shard yang berstatus unassigned (tidak teralokasi)?",
+          options: [
+            "green",
+            "yellow",
+            "red",
+            "blue"
+          ],
+          answerIndex: 1,
+          explanation: "Status Yellow berarti semua data utama (primary shard) aman dan dapat diakses, namun ada salinan data (replica shard) yang belum aktif/teralokasi di node mana pun."
+        },
+        {
+          id: "eng-m12-q2",
+          prompt: "Mengapa disarankan untuk menghindari pembuatan ribuan shard kecil berukuran di bawah 100MB di Elasticsearch?",
+          options: [
+            "Karena Lucene menolak berkas kecil",
+            "Because having thousands of small shards consumes JVM heap and hurts performance",
+            "Karena pencarian akan dibatasi hanya 10 dokumen",
+            "Karena shard kecil otomatis dihapus oleh ILM"
+          ],
+          answerIndex: 1,
+          explanation: "Setiap shard di Elasticsearch memerlukan alokasi overhead di RAM heap memory. Ribuan shard kecil akan membuang memori klaster secara sia-sia dan menurunkan performa secara drastis."
+        }
+      ]
+    },
+    {
+      slug: "scaling-elasticsearch",
+      title: "Scaling Elasticsearch",
+      level: "Lanjutan",
+      durationMinutes: 25,
+      intro: "Mempelajari strategi penskalaan klaster Elasticsearch: pembagian peran node (master, data, ingest) dan alokasi shard otomatis.",
+      sections: [
+        {
+          heading: "Pembagian Peran Node (Node Roles)",
+          paragraphs: [
+            "Seiring pertumbuhan klaster, sangat penting untuk memisahkan tanggung jawab node berdasarkan peran spesifik (Node Roles) untuk menghindari bottleneck:",
+            "1. **Master-eligible node**: Bertanggung jawab atas pengelolaan klaster, pembuatan skema indeks, koordinasi keanggotaan node.",
+            "2. **Data node**: Menyimpan shard dan memproses query tulis, baca, serta agregasi data.",
+            "3. **Ingest node**: Mengeksekusi Ingest Pipeline untuk pra-pemrosesan dokumen sebelum disimpan.",
+            "4. **Coordinating node**: Node tanpa peran khusus yang bertindak sebagai load balancer menerima request dan membaginya ke data node."
+          ]
+        },
+        {
+          heading: "Penskalaan Horizontal",
+          paragraphs: [
+            "Elasticsearch didesain untuk diskalakan secara horizontal dengan menambah node baru ke dalam klaster.",
+            "Ketika node data baru ditambahkan, Elasticsearch secara otomatis akan mendistribusikan ulang (rebalance) shard-shard yang ada ke node baru tersebut untuk menyeimbangkan kapasitas penyimpanan dan komputasi."
+          ],
+          codeExample: {
+            title: "Memeriksa Peran Node di Klaster",
+            lang: "json",
+            code: `GET /_cat/nodes?v=true&h=ip,name,role,heap.percent,cpu`
+          }
+        }
+      ],
+      keyPoints: [
+        "Pemisahan peran node mencegah satu node mengalami kelebihan beban kerja di klaster besar.",
+        "Master node mengelola state klaster; Data node menangani penyimpanan data.",
+        "Elasticsearch otomatis melakukan rebalancing shard saat node data baru bergabung atau keluar.",
+        "Klaster produksi minimal membutuhkan 3 master-eligible node terdedikasi untuk menghindari split-brain."
+      ],
+      quiz: [
+        {
+          id: "eng-m13-q1",
+          prompt: "Node dengan peran apa yang bertanggung jawab mengoordinasikan pembuatan indeks dan mencatat daftar node aktif di klaster?",
+          options: [
+            "Data node",
+            "Ingest node",
+            "Master-eligible node",
+            "Machine learning node"
+          ],
+          answerIndex: 2,
+          explanation: "Master node bertugas memimpin klaster, mengelola metadata tingkat klaster (cluster state), serta mengoordinasikan penambahan/penghapusan indeks."
+        },
+        {
+          id: "eng-m13-q2",
+          prompt: "Berapakah jumlah minimum master-eligible node terdedikasi yang direkomendasikan pada klaster produksi untuk mencegah kondisi split-brain?",
+          options: [
+            "1",
+            "2",
+            "3",
+            "5"
+          ],
+          answerIndex: 2,
+          explanation: "Klaster produksi memerlukan minimal 3 master-eligible node sehingga jika terjadi kegagalan jaringan, klaster tetap memiliki kuorum mayoritas (2 dari 3) untuk memilih master baru dengan aman."
+        }
+      ]
+    },
+    {
+      slug: "distributed-operations",
+      title: "Distributed Operations",
+      level: "Lanjutan",
+      durationMinutes: 25,
+      intro: "Memahami bagaimana Elasticsearch menangani operasi baca dan tulis secara terdistribusi di antara beberapa node dalam cluster.",
+      sections: [
+        {
+          heading: "Alur Operasi Tulis (Write Path)",
+          paragraphs: [
+            "Ketika dokumen ditulis ke Elasticsearch, koordinasi berjalan sebagai berikut:",
+            "1. Request diterima oleh **Coordinating Node**.",
+            "2. Node menghitung shard tujuan menggunakan rumus routing: `shard = hash(_id) % number_of_primary_shards`.",
+            "3. Request diteruskan ke node yang menyimpan **Primary Shard** terkait.",
+            "4. Primary Shard memvalidasi dokumen dan menulisnya secara lokal.",
+            "5. Primary Shard meneruskan request secara paralel ke semua **Replica Shards**.",
+            "6. Setelah replika merespons sukses, Primary Shard mengirim konfirmasi ke Coordinating Node, yang kemudian merespons pengguna."
+          ]
+        },
+        {
+          heading: "Alur Operasi Baca (Read Path)",
+          paragraphs: [
+            "Operasi pencarian (search) terdistribusi membutuhkan dua tahap eksekusi:",
+            "1. **Query Phase (Scatter)**: Coordinating node menyebarkan query ke semua shard (baik primary maupun replica) dari indeks yang dicari. Setiap shard mengeksekusi pencarian lokal dan mengembalikan daftar ID dokumen beserta skor relevansinya ke Coordinating node.",
+            "2. **Fetch Phase (Gather)**: Coordinating node menggabungkan hasil, mengurutkannya, memilih dokumen teratas sesuai 'size' yang diminta, lalu meminta isi dokumen JSON lengkap hanya dari shard asal dokumen pemenang tersebut."
+          ]
+        }
+      ],
+      keyPoints: [
+        "Operasi tulis selalu diarahkan ke Primary Shard terlebih dahulu baru direplikasi ke Replica.",
+        "Rumus routing menentukan distribusi dokumen secara merata di seluruh primary shard.",
+        "Operasi pencarian terdistribusi dibagi menjadi dua tahap: Query (Scatter) dan Fetch (Gather).",
+        "Fetch phase meminimalkan pemindahan data jaringan dengan hanya mengambil dokumen lengkap setelah pemenang peringkat ditentukan."
+      ],
+      quiz: [
+        {
+          id: "eng-m14-q1",
+          prompt: "Mengapa rumus routing Elasticsearch default menggunakan jumlah primary shard sebagai pembagi matematika?",
+          options: [
+            "Untuk menjamin data terenkripsi",
+            "Agar dokumen didistribusikan secara merata di seluruh primary shard yang tersedia",
+            "Untuk mengubah tipe data dokumen",
+            "Untuk menghapus data duplikat secara otomatis"
+          ],
+          answerIndex: 1,
+          explanation: "Rumus hash modulo membagi beban penyimpanan dokumen baru secara merata dan terprediksi di seluruh primary shard indeks."
+        },
+        {
+          id: "eng-m14-q2",
+          prompt: "Apa yang dilakukan Coordinating Node pada tahap Fetch (Fetch Phase) dalam pencarian terdistribusi?",
+          options: [
+            "Menghapus dokumen dari indeks",
+            "Meminta isi dokumen JSON lengkap berdasarkan ID dokumen pemenang peringkat yang didapatkan dari Query Phase",
+            "Mengubah skema mapping",
+            "Membagi indeks menjadi beberapa shard baru"
+          ],
+          answerIndex: 1,
+          explanation: "Setelah Coordinating Node menentukan dokumen mana saja yang masuk ke peringkat atas di Query Phase, ia langsung melakukan fetch (mengambil) isi JSON asli dokumen tersebut dari shard tempat dokumen itu disimpan."
+        }
+      ]
+    },
+    {
+      slug: "data-management-concepts",
+      title: "Data Management Concepts",
+      level: "Lanjutan",
+      durationMinutes: 25,
+      intro: "Menguasai konsep manajemen data: merancang arsitektur indeks untuk pertumbuhan data yang efisien dan berkelanjutan.",
+      sections: [
+        {
+          heading: "Index Templates dan Component Templates",
+          paragraphs: [
+            "Pada data deret waktu seperti log atau metrik, indeks baru dibuat secara berkala (misal harian). Menulis mapping manual setiap hari tentu tidak efisien.",
+            "Elasticsearch menyediakan **Index Templates** yang mendefinisikan settings dan mappings yang otomatis diterapkan ke indeks baru ketika nama indeks cocok dengan pola wildcard (misal `logs-*`).",
+            "**Component Templates** adalah blok pembangun modular reusable yang dapat digabungkan bersama untuk menyusun Index Template."
+          ],
+          codeExample: {
+            title: "Membuat Component Template dan Index Template",
+            lang: "json",
+            code: `PUT /_component_template/settings-kustom\n{\n  "template": {\n    "settings": {\n      "number_of_shards": 1,\n      "number_of_replicas": 1\n    }\n  }\n}\n\nPUT /_index_template/logs-template\n{\n  "index_patterns": ["logs-*"],\n  "composed_of": ["settings-kustom"]\n}`
+          }
+        },
+        {
+          heading: "Index Aliases dan Rollover",
+          paragraphs: [
+            "**Index Alias** adalah nama samaran (pointer) yang menunjuk ke satu atau lebih indeks aktif. Ini sangat berguna agar aplikasi backend tidak perlu mengubah kode nama indeks saat terjadi pergantian indeks fisik.",
+            "Proses **Rollover** memindahkan penulisan data dari indeks lama ke indeks baru secara otomatis saat indeks lama mencapai kriteria tertentu (seperti usia 7 hari atau ukuran 50GB)."
+          ]
+        }
+      ],
+      keyPoints: [
+        "Index Template mengotomatisasi konfigurasi indeks baru berdasarkan pola kecocokan nama.",
+        "Component Template adalah komponen modular yang menyusun Index Template.",
+        "Index Alias menyembunyikan kompleksitas nama indeks fisik di belakang satu nama pointer.",
+        "Rollover mengalihkan aktivitas penulisan ke indeks baru tanpa downtime penulisan."
+      ],
+      quiz: [
+        {
+          id: "eng-m15-q1",
+          prompt: "Apa fungsi utama dari fitur Index Alias di Elasticsearch?",
+          options: [
+            "Menghapus dokumen secara otomatis",
+            "Menyediakan satu nama samaran yang menunjuk ke satu atau beberapa indeks fisik, memisahkan backend aplikasi dari perubahan indeks di bawahnya",
+            "Menerjemahkan bahasa query",
+            "Meningkatkan memori heap secara dinamis"
+          ],
+          answerIndex: 1,
+          explanation: "Dengan Alias, aplikasi Anda cukup melakukan query ke nama alias (misal 'logs_write') tanpa perlu peduli jika indeks fisik di bawahnya berganti dari 'logs-000001' ke 'logs-000002'."
+        },
+        {
+          id: "eng-m15-q2",
+          prompt: "Bagaimana cara menyusun Index Template agar fleksibel dan komponennya dapat digunakan kembali (reusable) di template lain?",
+          options: [
+            "Menulis semua konfigurasi di satu file besar",
+            "Menggunakan Component Templates dan menggabungkannya di parameter 'composed_of'",
+            "Menonaktifkan dynamic mapping",
+            "Menggunakan alias untuk setiap template"
+          ],
+          answerIndex: 1,
+          explanation: "Component templates dirancang khusus sebagai bagian modular reusable yang didefinisikan terpisah, lalu diimpor ke dalam index template lewat array 'composed_of'."
+        }
+      ]
+    },
+    {
+      slug: "data-streams",
+      title: "Data Streams",
+      level: "Siap Ujian",
+      durationMinutes: 30,
+      intro: "Mengenal Data Streams, cara modern dan efisien untuk mengelola data deret waktu (time-series) yang bersifat append-only seperti log dan metrik.",
+      sections: [
+        {
+          heading: "Konsep Dasar Data Stream",
+          paragraphs: [
+            "Data Stream adalah abstraksi modern di Elasticsearch untuk mengelola data deret waktu yang bersifat append-only (hanya ditambahkan, tidak pernah diperbarui di tempat) seperti log, metrik, atau data keamanan.",
+            "Sebuah Data Stream menyatukan beberapa indeks tersembunyi (backing indices) di belakang satu nama endpoint pencarian tunggal. Ketika Anda menulis dokumen baru, data otomatis disimpan di backing index aktif yang paling baru."
+          ]
+        },
+        {
+          heading: "Persyaratan Menggunakan Data Stream",
+          paragraphs: [
+            "Untuk membuat Data Stream, Anda harus memenuhi beberapa syarat wajib:",
+            "1. Dokumen harus memiliki field waktu bernama **`@timestamp`** bertipe `date` atau `date_nanos`.",
+            "2. Anda wajib membuat **Index Template** yang mengaktifkan properti data stream (`\"data_stream\": {}`) dan memiliki pola nama indeks yang sesuai."
+          ],
+          codeExample: {
+            title: "Membuat Index Template untuk Data Stream",
+            lang: "json",
+            code: `PUT /_index_template/metrics-template\n{\n  "index_patterns": ["metrics-*"],\n  "data_stream": {},\n  "template": {\n    "mappings": {\n      "properties": {\n        "@timestamp": { "type": "date" }\n      }\n    }\n  }\n}\n\nPUT /_data_stream/metrics-server`
+          }
+        }
+      ],
+      keyPoints: [
+        "Data Stream menyembunyikan manajemen backing indices untuk data deret waktu append-only.",
+        "Setiap dokumen wajib menyertakan field pencatat waktu bernama '@timestamp'.",
+        "Operasi penulisan langsung diarahkan ke backing index terbaru, sedangkan pencarian dilakukan di seluruh backing indices.",
+        "Operasi pembaruan dokumen (update) secara langsung dengan ID dilarang di Data Stream."
+      ],
+      quiz: [
+        {
+          id: "eng-m16-q1",
+          prompt: "Field manakah yang wajib ada di setiap dokumen agar dapat dimasukkan ke dalam Data Stream?",
+          options: [
+            "id",
+            "message",
+            "@timestamp",
+            "hostname"
+          ],
+          answerIndex: 2,
+          explanation: "Data Stream didesain khusus untuk data berbasis waktu, sehingga mewajibkan setiap dokumen memiliki field pencatat waktu bernama '@timestamp'."
+        },
+        {
+          id: "eng-m16-q2",
+          prompt: "Bagaimana cara melakukan update pada dokumen yang sudah terlanjur disimpan di dalam Data Stream?",
+          options: [
+            "Menjalankan request PUT langsung ke ID dokumen tersebut",
+            "Menjalankan update_by_query dengan skrip spesifik",
+            "Data Stream tidak mengizinkan perubahan data sama sekali",
+            "Menghapus dan membuat ulang klaster"
+          ],
+          answerIndex: 1,
+          explanation: "Karena Data Stream bersifat append-only, penulisan langsung (PUT) ke ID dokumen yang sudah ada akan ditolak. Pembaruan hanya diperbolehkan melalui API _update_by_query atau _delete_by_query."
+        }
+      ]
+    },
+    {
+      slug: "index-lifecycle-management",
+      title: "Index Lifecycle Management (ILM)",
+      level: "Siap Ujian",
+      durationMinutes: 30,
+      intro: "Mengotomasi siklus hidup indeks menggunakan ILM, memindahkan data dari fase hot, warm, cold, frozen, hingga fase delete sesuai kebijakan organisasi.",
+      sections: [
+        {
+          heading: "Fase Siklus Hidup ILM",
+          paragraphs: [
+            "Index Lifecycle Management (ILM) mengotomatiskan pengelolaan indeks seiring bertambahnya usia data melalui 5 fase utama:",
+            "1. **Hot**: Indeks aktif ditulis dan dicari. Biasanya berjalan proses rollover di sini.",
+            "2. **Warm**: Indeks tidak lagi ditulis tetapi masih sering dicari. Indeks diubah menjadi read-only, dan dapat di-shrink (dikurangi shard) atau di-force-merge.",
+            "3. **Cold**: Indeks jarang dicari. Data dapat dipindahkan ke hardware murah atau diubah menjadi searchable snapshot.",
+            "4. **Frozen**: Indeks sangat jarang dicari. Data dipasang sebagai searchable snapshot penuh untuk menghemat heap memory.",
+            "5. **Delete**: Indeks dihapus secara permanen untuk mengosongkan ruang disk."
+          ]
+        },
+        {
+          heading: "Konfigurasi ILM Policy",
+          paragraphs: [
+            "Anda membuat kebijakan ILM sekali, lalu memasangnya ke Index Template. Setiap indeks baru yang dibuat di bawah template tersebut otomatis akan mengikuti alur siklus hidup tersebut."
+          ],
+          codeExample: {
+            title: "Membuat Policy ILM",
+            lang: "json",
+            code: `PUT /_ilm/policy/logs_policy\n{\n  "policy": {\n    "phases": {\n      "hot": {\n        "actions": {\n          "rollover": {\n            "max_size": "50gb",\n            "max_age": "30d"\n          }\n        }\n      },\n      "delete": {\n        "min_age": "90d",\n        "actions": {\n          "delete": {}\n        }\n      }\n    }\n  }\n}`
+          }
+        }
+      ],
+      keyPoints: [
+        "ILM mengotomatiskan perpindahan indeks antar fase penyimpanan berdasarkan usia atau ukuran data.",
+        "5 Fase ILM: Hot, Warm, Cold, Frozen, dan Delete.",
+        "Rollover pada fase Hot menjaga ukuran indeks agar tetap berada dalam performa terbaik.",
+        "Integrasi ILM dengan Index Template memastikan otomatisasi tanpa intervensi manual berkala."
+      ],
+      quiz: [
+        {
+          id: "eng-m17-q1",
+          prompt: "Fase ILM mana yang bertanggung jawab melakukan proses rollover ketika indeks aktif mencapai batas ukuran tertentu?",
+          options: [
+            "Hot Phase",
+            "Warm Phase",
+            "Cold Phase",
+            "Delete Phase"
+          ],
+          answerIndex: 0,
+          explanation: "Rollover hanya terjadi di fase Hot, di mana indeks tersebut masih aktif menerima operasi penulisan dokumen baru."
+        },
+        {
+          id: "eng-m17-q2",
+          prompt: "Apa yang terjadi pada dokumen di fase Delete?",
+          options: [
+            "Dokumen dikompresi saja",
+            "Indeks beserta seluruh dokumen di dalamnya dihapus secara permanen dari klaster",
+            "Dokumen dipindahkan ke indeks sistem",
+            "Dokumen dikirim ke klaster remote"
+          ],
+          answerIndex: 1,
+          explanation: "Fase Delete melakukan penghapusan fisik secara permanen terhadap indeks lama yang telah melewati batas retensi data minimum yang ditentukan."
+        }
+      ]
+    },
+    {
+      slug: "searchable-snapshots",
+      title: "Searchable Snapshots",
+      level: "Siap Ujian",
+      durationMinutes: 30,
+      intro: "Menghemat biaya penyimpanan klaster secara drastis dengan melakukan pencarian langsung pada snapshot yang disimpan di object storage eksternal.",
+      sections: [
+        {
+          heading: "Konsep Searchable Snapshots",
+          paragraphs: [
+            "Secara tradisional, snapshot hanya digunakan sebagai cadangan (backup) pasif yang harus dipulihkan (restore) sepenuhnya ke disk lokal sebelum dapat dicari kembali.",
+            "**Searchable Snapshots** adalah fitur revolusioner yang memungkinkan Elasticsearch mencari data secara langsung dari snapshot yang tersimpan di penyimpanan objek eksternal (seperti AWS S3, Google Cloud Storage, atau Azure Blob) secara real-time tanpa perlu restore penuh ke server."
+          ]
+        },
+        {
+          heading: "Peran dalam Arsitektur Cold & Frozen Tiers",
+          paragraphs: [
+            "Searchable Snapshots adalah pilar utama dari Cold dan Frozen data tiers. Dengan fitur ini, Anda dapat memangkas kebutuhan penyimpanan disk lokal hingga **50% pada Cold Tier** (hanya memerlukan cache lokal) dan bahkan **hingga 100% pada Frozen Tier** (tidak memerlukan penyimpanan lokal sama sekali selain cache memori yang sangat kecil)."
+          ],
+          codeExample: {
+            title: "Me-mount Snapshot sebagai Searchable Snapshot",
+            lang: "json",
+            code: `POST /_snapshot/repo_cadangan/snapshot_1/_mount?wait_for_completion=true\n{\n  "index": "logs-2024",\n  "renamed_index": "restored-logs-2024",\n  "storage": "shared_cache"\n}`
+          }
+        }
+      ],
+      keyPoints: [
+        "Searchable Snapshots memungkinkan query dijalankan langsung di atas data snapshot eksternal.",
+        "Sangat mengurangi biaya infrastruktur klaster dengan meminimalkan kebutuhan SSD lokal.",
+        "Menjadi teknologi dasar untuk Cold Tier (dengan local cache) dan Frozen Tier.",
+        "Penyimpanan fisik menggunakan Object Storage yang murah dan berskala masif."
+      ],
+      quiz: [
+        {
+          id: "eng-m18-q1",
+          prompt: "Mengapa Searchable Snapshots dapat mengurangi biaya operasional klaster Elasticsearch secara signifikan?",
+          options: [
+            "Karena fitur ini mematikan replikasi otomatis",
+            "Karena memungkinkan data lama disimpan di Object Storage eksternal yang murah tetapi tetap dapat dicari langsung tanpa perlu dipulihkan ke SSD lokal",
+            "Karena fitur ini mempercepat proses ingest data baru",
+            "Karena fitur ini menghapus log otomatis"
+          ],
+          answerIndex: 1,
+          explanation: "Object Storage seperti AWS S3 jauh lebih murah daripada penyimpanan SSD lokal. Dengan mencari langsung dari sana, klaster dapat menyimpan data bertahun-tahun dengan biaya minimal."
+        },
+        {
+          id: "eng-m18-q2",
+          prompt: "Dalam arsitektur data tiers, tier mana yang sama sekali tidak membutuhkan penyimpanan sekunder lokal karena murni mengandalkan Searchable Snapshots?",
+          options: [
+            "Hot Tier",
+            "Warm Tier",
+            "Cold Tier",
+            "Frozen Tier"
+          ],
+          answerIndex: 3,
+          explanation: "Frozen Tier dirancang khusus agar indeks dipasang murni sebagai searchable snapshot penuh, mengeliminasi kebutuhan disk lokal dan hanya menyisakan memori cache sementara."
+        }
+      ]
+    },
+    {
+      slug: "multi-cluster-operations",
+      title: "Multi Cluster Operations",
+      level: "Siap Ujian",
+      durationMinutes: 30,
+      intro: "Menghubungkan beberapa klaster Elasticsearch menggunakan Cross-Cluster Search (CCS) dan Cross-Cluster Replication (CCR) untuk skalabilitas global.",
+      sections: [
+        {
+          heading: "Cross-Cluster Search (CCS)",
+          paragraphs: [
+            "Cross-Cluster Search (CCS) memungkinkan sebuah klaster bertindak sebagai federasi yang menjalankan satu query pencarian tunggal ke beberapa klaster Elasticsearch mandiri yang terpisah secara geografis.",
+            "Ini sangat berguna bagi organisasi global yang memiliki klaster lokal di berbagai wilayah (misal Asia, Eropa, Amerika) agar tetap dapat mencari seluruh data dari satu konsol pusat."
+          ],
+          codeExample: {
+            title: "Melakukan Query Pencarian Multi-Klaster",
+            lang: "json",
+            code: `GET /klaster_asia:logs-*,klaster_eropa:logs-*/_search\n{\n  "query": {\n    "match": {\n      "status": "error"\n    }\n  }\n}`
+          }
+        },
+        {
+          heading: "Cross-Cluster Replication (CCR)",
+          paragraphs: [
+            "Cross-Cluster Replication (CCR) digunakan untuk mereplikasi indeks secara aktif dan real-time dari satu klaster (Leader) ke klaster lain (Follower).",
+            "CCR sangat krusial untuk strategi pemulihan bencana (Disaster Recovery / DR) serta untuk mendekatkan posisi data ke pengguna akhir demi meminimalkan latensi pencarian."
+          ]
+        }
+      ],
+      keyPoints: [
+        "CCS memungkinkan pencarian federasi ke beberapa klaster dari satu query tunggal.",
+        "CCS merujuk indeks klaster remote menggunakan format <nama_klaster_remote>:<nama_indeks>.",
+        "CCR melakukan replikasi data aktif secara asinkronus antar klaster mandiri.",
+        "Indeks follower hasil replikasi CCR di klaster tujuan bersifat read-only."
+      ],
+      quiz: [
+        {
+          id: "eng-m19-q1",
+          prompt: "Bagaimana cara melakukan pencarian ke indeks 'orders' pada klaster remote bernama 'klaster_us' dari klaster lokal Anda?",
+          options: [
+            "GET /orders/_search?remote=klaster_us",
+            "GET /klaster_us:orders/_search",
+            "GET /klaster_us/orders/_search",
+            "POST /_remote/klaster_us/orders"
+          ],
+          answerIndex: 1,
+          explanation: "Pada Cross-Cluster Search (CCS), klaster remote diidentifikasi menggunakan awalan nama klaster remote diikuti tanda titik dua (colon), contoh: 'klaster_us:orders'."
+        },
+        {
+          id: "eng-m19-q2",
+          prompt: "Bagaimanakah sifat indeks Follower di klaster tujuan ketika menggunakan Cross-Cluster Replication (CCR)?",
+          options: [
+            "Dapat ditulis dan dibaca secara bebas (read-write)",
+            "Bersifat hanya-baca (read-only)",
+            "Hanya bisa ditulis tanpa bisa dibaca",
+            "Otomatis terhapus setelah 24 jam"
+          ],
+          answerIndex: 1,
+          explanation: "Indeks follower murni merupakan replika cermin asinkronus dari indeks leader, sehingga dikunci agar hanya bisa dibaca (read-only) untuk menjamin konsistensi data."
+        }
+      ]
+    },
+    {
+      slug: "troubleshooting",
+      title: "Troubleshooting",
+      level: "Siap Ujian",
+      durationMinutes: 30,
+      intro: "Latihan mendiagnosis masalah klaster yang paling umum: alokasi shard gagal, kehabisan memori heap JVM, dan sirkuit pemutus (circuit breakers).",
+      sections: [
+        {
+          heading: "Mendiagnosis Shard Unassigned",
+          paragraphs: [
+            "Ketika indeks berstatus Yellow atau Red, itu tandanya ada shard yang gagal dialokasikan ke node.",
+            "Untuk mendiagnosis alasan tepat kegagalan alokasi tersebut, gunakan API **`_cluster/allocation/explain`**. API ini akan menganalisis keputusan alokasi klaster dan memberikan laporan tekstual yang menjelaskan mengapa shard tidak bisa ditempatkan di node mana pun (misal karena disk penuh, batasan alokasi, dll)."
+          ],
+          codeExample: {
+            title: "Menggunakan Allocation Explain",
+            lang: "json",
+            code: `GET /_cluster/allocation/explain\n{\n  "index": "logs-2024",\n  "shard": 0,\n  "primary": true\n}`
+          }
+        },
+        {
+          heading: "Heap Memory dan Circuit Breakers",
+          paragraphs: [
+            "Masalah stabilitas klaster yang paling sering ditemui adalah kehabisan memori heap JVM (OutOfMemoryError).",
+            "Elasticsearch mengantisipasi hal ini dengan menyediakan **Circuit Breakers** internal. Sirkuit pemutus ini memantau penggunaan memori secara real-time. Jika sebuah query (seperti agregasi besar atau pencarian teks penuh) diperkirakan akan melampaui batas memori aman, sirkuit akan memutus (abort) query tersebut seketika dan mengembalikan error, menjaga node agar tidak crash."
+          ]
+        }
+      ],
+      keyPoints: [
+        "API _cluster/allocation/explain adalah alat utama mendiagnosis alasan shard gagal dialokasikan (unassigned).",
+        "Circuit Breakers menghentikan query yang memakan memori berlebih sebelum memicu OutOfMemoryError.",
+        "Mendapatkan visualisasi alokasi shard secara cepat melalui API _cat/shards.",
+        "Meningkatkan kapasitas memori heap JVM (direkomendasikan maksimal 50% RAM fisik dan tidak melebihi 32GB)."
+      ],
+      quiz: [
+        {
+          id: "eng-m20-q1",
+          prompt: "API manakah yang harus Anda panggil pertama kali untuk menganalisis mengapa sebuah primary shard berstatus unassigned di klaster?",
+          options: [
+            "GET /_cluster/health",
+            "GET /_cluster/allocation/explain",
+            "GET /_cat/nodes",
+            "POST /_analyze"
+          ],
+          answerIndex: 1,
+          explanation: "API _cluster/allocation/explain menganalisis state alokasi shard secara spesifik dan melaporkan alasan rinci kegagalannya secara transparan."
+        },
+        {
+          id: "eng-m20-q2",
+          prompt: "Apa yang dilakukan oleh sirkuit pemutus (Circuit Breaker) di Elasticsearch saat menerima query agregasi raksasa yang diprediksi melebihi kapasitas memori?",
+          options: [
+            "Membagi query menjadi sub-query otomatis",
+            "Membatalkan (abort) eksekusi query tersebut seketika dan mengembalikan error untuk melindungi node agar tidak kehabisan heap memory dan crash",
+            "Mematikan node secara paksa",
+            "Menghapus dokumen lama di klaster"
+          ],
+          answerIndex: 1,
+          explanation: "Circuit Breakers mendeteksi penggunaan memori sebelum query berjalan penuh. Jika diprediksi akan melebihi batas, sirkuit akan menghentikannya demi menjaga keutuhan dan stabilitas klaster."
+        }
+      ]
+    }
   ],
   examQuestions: [
     {
@@ -664,7 +1302,7 @@ export const engineerTrack: Track = {
       id: "eng-ex-5",
       prompt: "Mengapa pencarian Elasticsearch disebut near real-time?",
       options: [
-        "Karena memakai jaringan lambat",
+        "Kecepatan penulisan lambat",
         "Karena dokumen baru dapat dicari setelah proses refresh (default 1 detik)",
         "Karena hanya berjalan malam hari",
         "Karena data disimpan di cache browser",
