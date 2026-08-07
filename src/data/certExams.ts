@@ -421,9 +421,9 @@ const observabilityExam: CertExam = {
 const detectionExam: CertExam = {
   slug: "detection",
   trackSlug: "detection",
-  title: "Elastic Certified Detection Engineer",
+  title: "Elastic Security for SIEM",
   description:
-    "Task-based simulation mirroring the Elastic Certified Detection Engineer exam. You work inside a Kibana space with Elastic Security enabled and must complete hands-on detection engineering tasks: building rules, tuning, hunting, and investigating alerts. Partial credit applies.",
+    "Task-based simulation mirroring the Elastic Security for SIEM exam/curriculum. You work inside a Kibana space with Elastic Security enabled and must complete hands-on detection engineering tasks: building rules, tuning, hunting, and investigating alerts. Partial credit applies.",
   durationMinutes: 45,
   passingScore: 70,
   questions: [
